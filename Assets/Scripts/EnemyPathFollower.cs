@@ -3,40 +3,54 @@ using UnityEngine.AI;
 
 public class EnemyPathFollower : MonoBehaviour
 {
-    [SerializeField] private PathController path;
-
     private NavMeshAgent agent;
-    private int index;
     private Transform[] waypoints;
+    private int index;
 
-    private void Awake()
-    {
-        agent = GetComponent<NavMeshAgent>();
-        agent.autoRepath = true;
-    }
-
-    private void Start()
+    public void Init(PathController path)
     {
         if (path == null)
-        {
-            enabled = false;
             return;
+
+        if (agent == null)
+        {
+            agent = GetComponent<NavMeshAgent>();
+            if (agent == null)
+                return;
+
+            agent.autoRepath = true;
+            agent.obstacleAvoidanceType = ObstacleAvoidanceType.NoObstacleAvoidance;
         }
 
         waypoints = path.Waypoints;
         if (waypoints == null || waypoints.Length == 0)
-        {
-            enabled = false;
             return;
-        }
 
-        index = 0;
-        agent.Warp(waypoints[index].position);
-        agent.SetDestination(waypoints[index].position);
+        // ставим юнита в точку Start
+        agent.Warp(waypoints[0].position);
+
+        // если точка одна — идём в неё же
+        if (waypoints.Length == 1)
+        {
+            index = 0;
+            agent.SetDestination(waypoints[0].position);
+        }
+        else
+        {
+            // сразу целимся на следующую точку маршрута
+            index = 1;
+            agent.SetDestination(waypoints[1].position);
+        }
     }
 
     private void Update()
     {
+        if (agent == null)
+            return;
+
+        if (waypoints == null || waypoints.Length == 0)
+            return;
+
         if (agent.pathPending)
             return;
 

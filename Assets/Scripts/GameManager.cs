@@ -9,6 +9,10 @@ public class GameManager : MonoBehaviour
     [field: SerializeField] public int Lives { get; private set; } = 50;
     [field: SerializeField] public int Wave { get; private set; } = 1;
 
+    [SerializeField] private WaveSpawner waveSpawner;
+    [SerializeField] private int baseEnemiesPerWave = 10;
+    [SerializeField] private int enemiesPerWaveIncrement = 0;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -22,11 +26,17 @@ public class GameManager : MonoBehaviour
 
     public void AddGold(int amount)
     {
+        if (amount <= 0)
+            return;
+
         Gold += amount;
     }
 
     public void AddLumber(int amount)
     {
+        if (amount <= 0)
+            return;
+
         Lumber += amount;
     }
 
@@ -37,7 +47,22 @@ public class GameManager : MonoBehaviour
 
     public void NextWave()
     {
+        if (waveSpawner == null)
+            return;
+
+        if (waveSpawner.IsSpawning)
+            return;
+
+        var enemyCount = GetEnemyCountForWave(Wave);
+        waveSpawner.StartWave(enemyCount);
         Wave++;
-        // здесь позже будет логика запуска волны
+    }
+
+    private int GetEnemyCountForWave(int waveNumber)
+    {
+        var result = baseEnemiesPerWave + enemiesPerWaveIncrement * (waveNumber - 1);
+        if (result < 1)
+            result = 1;
+        return result;
     }
 }
