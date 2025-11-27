@@ -2,16 +2,15 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager Instance { get; private set; }
-
-    [field: SerializeField] public int Gold { get; private set; } = 0;
-    [field: SerializeField] public int Lumber { get; private set; } = 0;
+    [field: SerializeField] public int Gold { get; private set; }
+    [field: SerializeField] public int Lumber { get; private set; }
     [field: SerializeField] public int Lives { get; private set; } = 50;
     [field: SerializeField] public int Wave { get; private set; } = 1;
 
     [SerializeField] private WaveSpawner waveSpawner;
     [SerializeField] private int baseEnemiesPerWave = 10;
-    [SerializeField] private int enemiesPerWaveIncrement = 0;
+    [SerializeField] private int enemiesPerWaveIncrement;
+    public static GameManager Instance { get; private set; }
 
     private void Awake()
     {

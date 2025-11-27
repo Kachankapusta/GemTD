@@ -4,8 +4,38 @@ using UnityEngine.AI;
 public class EnemyPathFollower : MonoBehaviour
 {
     private NavMeshAgent agent;
-    private Transform[] waypoints;
     private int index;
+    private Transform[] waypoints;
+
+    private void Update()
+    {
+        if (agent == null)
+            return;
+
+        if (waypoints == null || waypoints.Length == 0)
+            return;
+
+        if (agent.pathPending)
+            return;
+
+        if (agent.remainingDistance > 0.1f)
+            return;
+
+        index++;
+
+        if (index < waypoints.Length)
+        {
+            agent.SetDestination(waypoints[index].position);
+        }
+        else
+        {
+            var gameManager = GameManager.Instance;
+            if (gameManager != null)
+                gameManager.ChangeLives(-1);
+
+            Destroy(gameObject);
+        }
+    }
 
     public void Init(PathController path)
     {
@@ -37,36 +67,6 @@ public class EnemyPathFollower : MonoBehaviour
         {
             index = 1;
             agent.SetDestination(waypoints[1].position);
-        }
-    }
-
-    private void Update()
-    {
-        if (agent == null)
-            return;
-
-        if (waypoints == null || waypoints.Length == 0)
-            return;
-
-        if (agent.pathPending)
-            return;
-
-        if (agent.remainingDistance > 0.1f)
-            return;
-
-        index++;
-
-        if (index < waypoints.Length)
-        {
-            agent.SetDestination(waypoints[index].position);
-        }
-        else
-        {
-            var gameManager = GameManager.Instance;
-            if (gameManager != null)
-                gameManager.ChangeLives(-1);
-
-            Destroy(gameObject);
         }
     }
 }

@@ -8,12 +8,11 @@ public class WaveSpawner : MonoBehaviour
     [SerializeField] private Transform enemiesRoot;
     [SerializeField] private float spawnInterval = 0.5f;
 
-    private bool isSpawning;
-    public bool IsSpawning => isSpawning;
+    public bool IsSpawning { get; private set; }
 
     public void StartWave(int enemyCount)
     {
-        if (isSpawning)
+        if (IsSpawning)
             return;
 
         if (enemyPrefab == null)
@@ -30,12 +29,12 @@ public class WaveSpawner : MonoBehaviour
 
     private IEnumerator SpawnWave(int enemyCount)
     {
-        isSpawning = true;
+        IsSpawning = true;
 
         var waypoints = pathController.Waypoints;
         if (waypoints == null || waypoints.Length == 0)
         {
-            isSpawning = false;
+            IsSpawning = false;
             yield break;
         }
 
@@ -47,7 +46,9 @@ public class WaveSpawner : MonoBehaviour
         {
             var spawnPosition = startPoint + backDir * (i * 0.5f);
 
-            var instance = enemiesRoot != null ? Instantiate(enemyPrefab, spawnPosition, Quaternion.identity, enemiesRoot) : Instantiate(enemyPrefab, spawnPosition, Quaternion.identity);
+            var instance = enemiesRoot != null
+                ? Instantiate(enemyPrefab, spawnPosition, Quaternion.identity, enemiesRoot)
+                : Instantiate(enemyPrefab, spawnPosition, Quaternion.identity);
 
             var follower = instance.GetComponent<EnemyPathFollower>();
             if (follower != null)
@@ -56,6 +57,6 @@ public class WaveSpawner : MonoBehaviour
             yield return new WaitForSeconds(spawnInterval);
         }
 
-        isSpawning = false;
+        IsSpawning = false;
     }
 }

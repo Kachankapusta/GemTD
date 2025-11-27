@@ -7,13 +7,15 @@ public class GridPointSnap : MonoBehaviour
     [SerializeField] private int column = 1;
     [SerializeField] private int row = 1;
     [SerializeField] private float y;
+    public int Column => column;
+    public int Row => row;
 
-    private void OnValidate()
+    private void OnEnable()
     {
         Apply();
     }
 
-    private void OnEnable()
+    private void OnValidate()
     {
         Apply();
     }

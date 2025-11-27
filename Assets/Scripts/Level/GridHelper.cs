@@ -9,12 +9,44 @@ public class GridHelper : MonoBehaviour
     private Vector3 boardCenter;
     private float cellSizeX;
     private float cellSizeZ;
-    private float halfWidth;
     private float halfHeight;
+    private float halfWidth;
+    public int Columns => columns;
+    public int Rows => rows;
 
     private void Awake()
     {
         Recalculate();
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (gameBoard == null)
+            return;
+
+        if (columns <= 0 || rows <= 0)
+            return;
+
+        Recalculate();
+
+        Gizmos.color = Color.gray;
+
+        var minX = boardCenter.x - halfWidth;
+        var maxX = boardCenter.x + halfWidth;
+        var minZ = boardCenter.z - halfHeight;
+        var maxZ = boardCenter.z + halfHeight;
+
+        for (var i = 0; i <= columns; i++)
+        {
+            var x = minX + i * cellSizeX;
+            Gizmos.DrawLine(new Vector3(x, boardCenter.y, minZ), new Vector3(x, boardCenter.y, maxZ));
+        }
+
+        for (var j = 0; j <= rows; j++)
+        {
+            var z = minZ + j * cellSizeZ;
+            Gizmos.DrawLine(new Vector3(minX, boardCenter.y, z), new Vector3(maxX, boardCenter.y, z));
+        }
     }
 
     private void OnValidate()
@@ -82,35 +114,5 @@ public class GridHelper : MonoBehaviour
         column = col;
         row = r;
         return true;
-    }
-
-    private void OnDrawGizmos()
-    {
-        if (gameBoard == null)
-            return;
-
-        if (columns <= 0 || rows <= 0)
-            return;
-
-        Recalculate();
-
-        Gizmos.color = Color.gray;
-
-        var minX = boardCenter.x - halfWidth;
-        var maxX = boardCenter.x + halfWidth;
-        var minZ = boardCenter.z - halfHeight;
-        var maxZ = boardCenter.z + halfHeight;
-
-        for (var i = 0; i <= columns; i++)
-        {
-            var x = minX + i * cellSizeX;
-            Gizmos.DrawLine(new Vector3(x, boardCenter.y, minZ), new Vector3(x, boardCenter.y, maxZ));
-        }
-
-        for (var j = 0; j <= rows; j++)
-        {
-            var z = minZ + j * cellSizeZ;
-            Gizmos.DrawLine(new Vector3(minX, boardCenter.y, z), new Vector3(maxX, boardCenter.y, z));
-        }
     }
 }
