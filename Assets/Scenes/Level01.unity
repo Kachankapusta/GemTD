@@ -1421,7 +1421,7 @@ MonoBehaviour:
   m_OverrideVoxelSize: 0
   m_VoxelSize: 0.16666667
   m_MinRegionArea: 2
-  m_NavMeshData: {fileID: 23800000, guid: 930f4d64e84bf234f9891d7203dc9130, type: 2}
+  m_NavMeshData: {fileID: 23800000, guid: 0a0b78b2a358993409f1c133673c7d7c, type: 2}
   m_BuildHeightMesh: 0
 --- !u!1 &572110245
 GameObject:
@@ -2166,6 +2166,7 @@ MonoBehaviour:
   grid: {fileID: 2085335767}
   gameBoard: {fileID: 533180428}
   towerPrefab: {fileID: 3152682538833340589, guid: 9a259aa5573170f41bf30c7539d122df, type: 3}
+  rockPrefab: {fileID: 8472887948019445234, guid: 123f63db9554d2d4fa06d8d165a46a1a, type: 3}
   towersRoot: {fileID: 683394723}
   pathBlocker: {fileID: 442636321}
   hudController: {fileID: 1817683215}
@@ -3819,6 +3820,7 @@ MonoBehaviour:
   startWaveButton: {fileID: 1819874136}
   gameManager: {fileID: 2085335769}
   buildErrorDefaultDuration: 2
+  towerBuilder: {fileID: 913186325}
 --- !u!1 &1819874134
 GameObject:
   m_ObjectHideFlags: 0

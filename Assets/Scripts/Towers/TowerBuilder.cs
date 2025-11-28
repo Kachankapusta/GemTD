@@ -26,6 +26,7 @@ namespace Towers
         private bool _isPlacing;
         private bool _selectionMode;
         private Tower _towerTemplate;
+        public bool IsSelectionMode => _selectionMode;
 
         private void Awake()
         {

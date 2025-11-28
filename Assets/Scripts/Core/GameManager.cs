@@ -19,6 +19,8 @@ namespace Core
 
         public static GameManager Instance { get; private set; }
 
+        public bool HasActiveEnemies => _activeEnemies > 0;
+
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -77,6 +79,9 @@ namespace Core
                 return;
 
             if (waveSpawner.IsSpawning)
+                return;
+
+            if (_activeEnemies > 0)
                 return;
 
             if (levelWavesConfig == null)

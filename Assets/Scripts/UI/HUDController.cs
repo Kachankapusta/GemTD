@@ -1,5 +1,6 @@
 using Core;
 using TMPro;
+using Towers;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,6 +16,7 @@ namespace UI
         [SerializeField] private Button startWaveButton;
         [SerializeField] private GameManager gameManager;
         [SerializeField] private float buildErrorDefaultDuration = 2f;
+        [SerializeField] private TowerBuilder towerBuilder;
 
         private float _buildErrorTimer;
 
@@ -64,15 +66,26 @@ namespace UI
             if (gameManager == null)
                 return;
 
+            if (towerBuilder != null && towerBuilder.IsSelectionMode)
+            {
+                ShowBuildError("Choose one tower before starting the next wave.", 2f);
+                return;
+            }
+
             if (gameManager.Lumber > 0)
             {
                 ShowBuildError("Spend all lumber before starting the next wave.", 2f);
                 return;
             }
 
+            if (gameManager.HasActiveEnemies)
+            {
+                ShowBuildError("You must finish the current wave first.", 2f);
+                return;
+            }
+
             gameManager.NextWave();
         }
-
 
         public void ShowBuildError(string message, float duration)
         {
