@@ -1,72 +1,75 @@
+using Core;
+using Level;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class EnemyPathFollower : MonoBehaviour
+namespace Enemies
 {
-    private NavMeshAgent agent;
-    private int index;
-    private Transform[] waypoints;
-
-    private void Update()
+    public class EnemyPathFollower : MonoBehaviour
     {
-        if (agent == null)
-            return;
+        [SerializeField] private float reachedDistance = 0.1f;
 
-        if (waypoints == null || waypoints.Length == 0)
-            return;
+        private NavMeshAgent _agent;
+        private Transform[] _waypoints;
+        private int _index;
 
-        if (agent.pathPending)
-            return;
-
-        if (agent.remainingDistance > 0.1f)
-            return;
-
-        index++;
-
-        if (index < waypoints.Length)
+        public void Init(PathController path)
         {
-            agent.SetDestination(waypoints[index].position);
-        }
-        else
-        {
-            var gameManager = GameManager.Instance;
-            if (gameManager != null)
-                gameManager.ChangeLives(-1);
-
-            Destroy(gameObject);
-        }
-    }
-
-    public void Init(PathController path)
-    {
-        if (path == null)
-            return;
-
-        if (agent == null)
-        {
-            agent = GetComponent<NavMeshAgent>();
-            if (agent == null)
+            if (path == null)
                 return;
 
-            agent.autoRepath = true;
-            agent.obstacleAvoidanceType = ObstacleAvoidanceType.NoObstacleAvoidance;
+            if (_agent == null)
+            {
+                _agent = GetComponent<NavMeshAgent>();
+                if (_agent == null)
+                    return;
+
+                _agent.autoRepath = true;
+            }
+
+            _waypoints = path.Waypoints;
+            if (_waypoints == null || _waypoints.Length == 0)
+                return;
+
+            _index = 0;
+
+            _agent.Warp(_waypoints[0].position);
+
+            if (_waypoints.Length > 1)
+            {
+                _index = 1;
+                _agent.SetDestination(_waypoints[1].position);
+            }
         }
 
-        waypoints = path.Waypoints;
-        if (waypoints == null || waypoints.Length == 0)
-            return;
-
-        agent.Warp(waypoints[0].position);
-
-        if (waypoints.Length == 1)
+        private void Update()
         {
-            index = 0;
-            agent.SetDestination(waypoints[0].position);
-        }
-        else
-        {
-            index = 1;
-            agent.SetDestination(waypoints[1].position);
+            if (_agent == null || _waypoints == null || _waypoints.Length == 0)
+                return;
+
+            if (_agent.pathPending)
+                return;
+
+            if (_agent.remainingDistance > reachedDistance)
+                return;
+
+            _index++;
+
+            if (_index < _waypoints.Length)
+            {
+                _agent.SetDestination(_waypoints[_index].position);
+            }
+            else
+            {
+                var gameManager = GameManager.Instance;
+                if (gameManager != null)
+                {
+                    gameManager.ChangeLives(-1);
+                    gameManager.NotifyEnemyRemoved();
+                }
+
+                Destroy(gameObject);
+            }
         }
     }
 }

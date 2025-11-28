@@ -1,65 +1,132 @@
 using UnityEngine;
+using Waves;
 
-public class GameManager : MonoBehaviour
+namespace Core
 {
-    [field: SerializeField] public int Gold { get; private set; }
-    [field: SerializeField] public int Lumber { get; private set; }
-    [field: SerializeField] public int Lives { get; private set; } = 50;
-    [field: SerializeField] public int Wave { get; private set; } = 1;
-
-    [SerializeField] private WaveSpawner waveSpawner;
-    [SerializeField] private int baseEnemiesPerWave = 10;
-    [SerializeField] private int enemiesPerWaveIncrement;
-    public static GameManager Instance { get; private set; }
-
-    private void Awake()
+    public class GameManager : MonoBehaviour
     {
-        if (Instance != null && Instance != this)
+        [field: SerializeField] public int Gold { get; private set; }
+        [field: SerializeField] public int Lumber { get; private set; }
+        [field: SerializeField] public int Lives { get; private set; } = 50;
+        [field: SerializeField] public int Wave { get; private set; }
+
+        [SerializeField] private WaveSpawner waveSpawner;
+        [SerializeField] private LevelWavesConfig levelWavesConfig;
+        [SerializeField] private int lumberRewardPerWave = 5;
+
+        private int _activeEnemies;
+        private bool _canRewardWaveEnd;
+
+        public static GameManager Instance { get; private set; }
+
+        private void Awake()
         {
-            Destroy(gameObject);
-            return;
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            Instance = this;
         }
 
-        Instance = this;
-    }
+        public void AddGold(int amount)
+        {
+            if (amount <= 0)
+                return;
 
-    public void AddGold(int amount)
-    {
-        if (amount <= 0)
-            return;
+            Gold += amount;
+        }
 
-        Gold += amount;
-    }
+        public void AddLumber(int amount)
+        {
+            if (amount <= 0)
+                return;
 
-    public void AddLumber(int amount)
-    {
-        if (amount <= 0)
-            return;
+            Lumber += amount;
+        }
 
-        Lumber += amount;
-    }
+        public void ChangeLives(int delta)
+        {
+            Lives += delta;
+        }
 
-    public void ChangeLives(int delta)
-    {
-        Lives += delta;
-    }
+        public bool HasEnoughResources(int goldCost, int lumberCost)
+        {
+            if (goldCost < 0)
+                goldCost = 0;
 
-    public void NextWave()
-    {
-        if (waveSpawner == null)
-            return;
+            if (lumberCost < 0)
+                lumberCost = 0;
 
-        if (waveSpawner.IsSpawning)
-            return;
+            return Gold >= goldCost && Lumber >= lumberCost;
+        }
 
-        var enemyCount = GetEnemyCountForWave(Wave);
-        waveSpawner.StartWave(enemyCount);
-        Wave++;
-    }
+        public void SpendResources(int goldCost, int lumberCost)
+        {
+            if (goldCost > 0)
+                Gold -= goldCost;
 
-    private int GetEnemyCountForWave(int waveNumber)
-    {
-        var result = baseEnemiesPerWave + enemiesPerWaveIncrement * (waveNumber - 1);
-        return result < 1 ? 1 : result;
+            if (lumberCost > 0)
+                Lumber -= lumberCost;
+        }
+
+        public void NextWave()
+        {
+            if (waveSpawner == null)
+                return;
+
+            if (waveSpawner.IsSpawning)
+                return;
+
+            if (levelWavesConfig == null)
+                return;
+
+            var nextWaveNumber = Wave + 1;
+
+            var waveDefinition = levelWavesConfig.GetWaveByNumber(nextWaveNumber);
+            if (waveDefinition == null)
+                return;
+
+            _activeEnemies = 0;
+            _canRewardWaveEnd = true;
+
+            waveSpawner.StartWave(waveDefinition);
+            Wave = nextWaveNumber;
+        }
+
+        public void RegisterEnemySpawn()
+        {
+            _activeEnemies++;
+        }
+
+        public void NotifyEnemyRemoved()
+        {
+            if (_activeEnemies > 0)
+                _activeEnemies--;
+
+            TryRewardWaveEnd();
+        }
+
+        private void TryRewardWaveEnd()
+        {
+            if (!_canRewardWaveEnd)
+                return;
+
+            if (_activeEnemies > 0)
+                return;
+
+            if (waveSpawner != null && waveSpawner.IsSpawning)
+                return;
+
+            if (lumberRewardPerWave <= 0)
+            {
+                _canRewardWaveEnd = false;
+                return;
+            }
+
+            Lumber += lumberRewardPerWave;
+            _canRewardWaveEnd = false;
+        }
     }
 }

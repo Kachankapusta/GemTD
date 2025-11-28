@@ -1,31 +1,34 @@
 using UnityEngine;
 
-[ExecuteAlways]
-public class GridPointSnap : MonoBehaviour
+namespace Level
 {
-    [SerializeField] private GridHelper grid;
-    [SerializeField] private int column = 1;
-    [SerializeField] private int row = 1;
-    [SerializeField] private float y;
-    public int Column => column;
-    public int Row => row;
-
-    private void OnEnable()
+    [ExecuteAlways]
+    public class GridPointSnap : MonoBehaviour
     {
-        Apply();
-    }
+        [SerializeField] private GridHelper grid;
+        [SerializeField] private int column = 1;
+        [SerializeField] private int row = 1;
+        [SerializeField] private float y;
+        public int Column => column;
+        public int Row => row;
 
-    private void OnValidate()
-    {
-        Apply();
-    }
+        private void OnEnable()
+        {
+            Apply();
+        }
 
-    private void Apply()
-    {
-        if (grid == null)
-            return;
+        private void OnValidate()
+        {
+            Apply();
+        }
 
-        var center = grid.GetCellCenter(column, row);
-        transform.position = new Vector3(center.x, y, center.z);
+        private void Apply()
+        {
+            if (grid == null)
+                return;
+
+            var center = grid.GetCellCenter(column, row);
+            transform.position = new Vector3(center.x, y, center.z);
+        }
     }
 }

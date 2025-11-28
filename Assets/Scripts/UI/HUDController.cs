@@ -1,73 +1,86 @@
+using Core;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class HUDController : MonoBehaviour
+namespace UI
 {
-    [SerializeField] private TextMeshProUGUI goldText;
-    [SerializeField] private TextMeshProUGUI lumberText;
-    [SerializeField] private TextMeshProUGUI livesText;
-    [SerializeField] private TextMeshProUGUI waveText;
-    [SerializeField] private TextMeshProUGUI buildErrorText;
-    [SerializeField] private Button startWaveButton;
-    [SerializeField] private GameManager gameManager;
-    [SerializeField] private float buildErrorDefaultDuration = 2f;
-
-    private float buildErrorTimer;
-
-    private void Awake()
+    public class HUDController : MonoBehaviour
     {
-        if (startWaveButton != null)
-            startWaveButton.onClick.AddListener(OnStartWaveClicked);
+        [SerializeField] private TextMeshProUGUI goldText;
+        [SerializeField] private TextMeshProUGUI lumberText;
+        [SerializeField] private TextMeshProUGUI livesText;
+        [SerializeField] private TextMeshProUGUI waveText;
+        [SerializeField] private TextMeshProUGUI buildErrorText;
+        [SerializeField] private Button startWaveButton;
+        [SerializeField] private GameManager gameManager;
+        [SerializeField] private float buildErrorDefaultDuration = 2f;
 
-        if (buildErrorText != null)
-            buildErrorText.text = string.Empty;
-    }
+        private float _buildErrorTimer;
 
-    private void Update()
-    {
-        if (gameManager != null)
+        private void Awake()
         {
-            if (goldText != null)
-                goldText.text = $"Gold: {gameManager.Gold}";
+            if (startWaveButton != null)
+                startWaveButton.onClick.AddListener(OnStartWaveClicked);
 
-            if (lumberText != null)
-                lumberText.text = $"Lumber: {gameManager.Lumber}";
-
-            if (livesText != null)
-                livesText.text = $"Lives: {gameManager.Lives}";
-
-            if (waveText != null)
-                waveText.text = $"Wave: {gameManager.Wave}";
-        }
-
-        if (buildErrorTimer > 0f)
-        {
-            buildErrorTimer -= Time.deltaTime;
-
-            if (buildErrorTimer <= 0f && buildErrorText != null)
+            if (buildErrorText != null)
                 buildErrorText.text = string.Empty;
         }
-    }
 
-    private void OnDestroy()
-    {
-        if (startWaveButton != null)
-            startWaveButton.onClick.RemoveListener(OnStartWaveClicked);
-    }
+        private void Update()
+        {
+            if (gameManager != null)
+            {
+                if (goldText != null)
+                    goldText.text = $"Gold: {gameManager.Gold}";
 
-    private void OnStartWaveClicked()
-    {
-        if (gameManager != null)
+                if (lumberText != null)
+                    lumberText.text = $"Lumber: {gameManager.Lumber}";
+
+                if (livesText != null)
+                    livesText.text = $"Lives: {gameManager.Lives}";
+
+                if (waveText != null)
+                    waveText.text = $"Wave: {gameManager.Wave}";
+            }
+
+            if (_buildErrorTimer > 0f)
+            {
+                _buildErrorTimer -= Time.deltaTime;
+
+                if (_buildErrorTimer <= 0f && buildErrorText != null)
+                    buildErrorText.text = string.Empty;
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if (startWaveButton != null)
+                startWaveButton.onClick.RemoveListener(OnStartWaveClicked);
+        }
+
+        private void OnStartWaveClicked()
+        {
+            if (gameManager == null)
+                return;
+
+            if (gameManager.Lumber > 0)
+            {
+                ShowBuildError("Spend all lumber before starting the next wave.", 2f);
+                return;
+            }
+
             gameManager.NextWave();
-    }
+        }
 
-    public void ShowBuildError(string message, float duration)
-    {
-        if (buildErrorText == null)
-            return;
 
-        buildErrorText.text = message;
-        buildErrorTimer = duration > 0f ? duration : buildErrorDefaultDuration;
+        public void ShowBuildError(string message, float duration)
+        {
+            if (buildErrorText == null)
+                return;
+
+            buildErrorText.text = message;
+            _buildErrorTimer = duration > 0f ? duration : buildErrorDefaultDuration;
+        }
     }
 }

@@ -1,34 +1,61 @@
+using Core;
 using UnityEngine;
+using UnityEngine.AI;
 
-public class Enemy : MonoBehaviour
+namespace Enemies
 {
-    [SerializeField] private int maxHealth = 100;
-    [SerializeField] private int bounty = 1;
-
-    private int currentHealth;
-
-    private void Awake()
+    public class Enemy : MonoBehaviour
     {
-        currentHealth = maxHealth;
-    }
+        [SerializeField] private EnemyConfig config;
 
-    public void TakeDamage(int amount)
-    {
-        if (amount <= 0)
-            return;
+        private int _currentHealth;
 
-        currentHealth -= amount;
+        private void Awake()
+        {
+            ApplyConfig();
+        }
 
-        if (currentHealth <= 0)
-            Die();
-    }
+        public void Init(EnemyConfig enemyConfig)
+        {
+            config = enemyConfig;
+            ApplyConfig();
+        }
 
-    private void Die()
-    {
-        var gameManager = GameManager.Instance;
-        if (gameManager != null)
-            gameManager.AddGold(bounty);
+        public void TakeDamage(int amount)
+        {
+            if (amount <= 0)
+                return;
 
-        Destroy(gameObject);
+            _currentHealth -= amount;
+
+            if (_currentHealth <= 0)
+                Die();
+        }
+
+        private void ApplyConfig()
+        {
+            if (config == null)
+                return;
+
+            _currentHealth = config.MaxHealth;
+
+            var agent = GetComponent<NavMeshAgent>();
+            if (agent != null)
+                agent.speed = config.MoveSpeed;
+        }
+
+        private void Die()
+        {
+            var gameManager = GameManager.Instance;
+            if (gameManager != null)
+            {
+                if (config != null)
+                    gameManager.AddGold(config.Bounty);
+
+                gameManager.NotifyEnemyRemoved();
+            }
+
+            Destroy(gameObject);
+        }
     }
 }

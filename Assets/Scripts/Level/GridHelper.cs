@@ -1,118 +1,121 @@
 using UnityEngine;
 
-public class GridHelper : MonoBehaviour
+namespace Level
 {
-    [SerializeField] private Transform gameBoard;
-    [SerializeField] private int columns = 37;
-    [SerializeField] private int rows = 37;
-
-    private Vector3 boardCenter;
-    private float cellSizeX;
-    private float cellSizeZ;
-    private float halfHeight;
-    private float halfWidth;
-    public int Columns => columns;
-    public int Rows => rows;
-
-    private void Awake()
+    public class GridHelper : MonoBehaviour
     {
-        Recalculate();
-    }
+        [SerializeField] private Transform gameBoard;
+        [SerializeField] private int columns = 37;
+        [SerializeField] private int rows = 37;
 
-    private void OnDrawGizmos()
-    {
-        if (gameBoard == null)
-            return;
+        private Vector3 _boardCenter;
+        private float _cellSizeX;
+        private float _cellSizeZ;
+        private float _halfHeight;
+        private float _halfWidth;
+        public int Columns => columns;
+        public int Rows => rows;
 
-        if (columns <= 0 || rows <= 0)
-            return;
-
-        Recalculate();
-
-        Gizmos.color = Color.gray;
-
-        var minX = boardCenter.x - halfWidth;
-        var maxX = boardCenter.x + halfWidth;
-        var minZ = boardCenter.z - halfHeight;
-        var maxZ = boardCenter.z + halfHeight;
-
-        for (var i = 0; i <= columns; i++)
+        private void Awake()
         {
-            var x = minX + i * cellSizeX;
-            Gizmos.DrawLine(new Vector3(x, boardCenter.y, minZ), new Vector3(x, boardCenter.y, maxZ));
+            Recalculate();
         }
 
-        for (var j = 0; j <= rows; j++)
+        private void OnDrawGizmos()
         {
-            var z = minZ + j * cellSizeZ;
-            Gizmos.DrawLine(new Vector3(minX, boardCenter.y, z), new Vector3(maxX, boardCenter.y, z));
+            if (gameBoard == null)
+                return;
+
+            if (columns <= 0 || rows <= 0)
+                return;
+
+            Recalculate();
+
+            Gizmos.color = Color.gray;
+
+            var minX = _boardCenter.x - _halfWidth;
+            var maxX = _boardCenter.x + _halfWidth;
+            var minZ = _boardCenter.z - _halfHeight;
+            var maxZ = _boardCenter.z + _halfHeight;
+
+            for (var i = 0; i <= columns; i++)
+            {
+                var x = minX + i * _cellSizeX;
+                Gizmos.DrawLine(new Vector3(x, _boardCenter.y, minZ), new Vector3(x, _boardCenter.y, maxZ));
+            }
+
+            for (var j = 0; j <= rows; j++)
+            {
+                var z = minZ + j * _cellSizeZ;
+                Gizmos.DrawLine(new Vector3(minX, _boardCenter.y, z), new Vector3(maxX, _boardCenter.y, z));
+            }
         }
-    }
 
-    private void OnValidate()
-    {
-        Recalculate();
-    }
+        private void OnValidate()
+        {
+            Recalculate();
+        }
 
-    private void Recalculate()
-    {
-        if (gameBoard == null)
-            return;
+        private void Recalculate()
+        {
+            if (gameBoard == null)
+                return;
 
-        if (columns <= 0 || rows <= 0)
-            return;
+            if (columns <= 0 || rows <= 0)
+                return;
 
-        var localScale = gameBoard.localScale;
-        var sizeX = localScale.x;
-        var sizeZ = localScale.z;
+            var localScale = gameBoard.localScale;
+            var sizeX = localScale.x;
+            var sizeZ = localScale.z;
 
-        halfWidth = sizeX * 0.5f;
-        halfHeight = sizeZ * 0.5f;
+            _halfWidth = sizeX * 0.5f;
+            _halfHeight = sizeZ * 0.5f;
 
-        cellSizeX = sizeX / columns;
-        cellSizeZ = sizeZ / rows;
+            _cellSizeX = sizeX / columns;
+            _cellSizeZ = sizeZ / rows;
 
-        boardCenter = gameBoard.position;
-    }
+            _boardCenter = gameBoard.position;
+        }
 
-    public Vector3 GetCellCenter(int col, int row)
-    {
-        var minX = boardCenter.x - halfWidth;
-        var maxZ = boardCenter.z + halfHeight;
+        public Vector3 GetCellCenter(int col, int row)
+        {
+            var minX = _boardCenter.x - _halfWidth;
+            var maxZ = _boardCenter.z + _halfHeight;
 
-        var x = minX + (col - 0.5f) * cellSizeX;
-        var z = maxZ - (row - 0.5f) * cellSizeZ;
+            var x = minX + (col - 0.5f) * _cellSizeX;
+            var z = maxZ - (row - 0.5f) * _cellSizeZ;
 
-        return new Vector3(x, boardCenter.y, z);
-    }
+            return new Vector3(x, _boardCenter.y, z);
+        }
 
-    public bool TryGetCellFromWorld(Vector3 worldPosition, out int column, out int row)
-    {
-        column = 0;
-        row = 0;
+        public bool TryGetCellFromWorld(Vector3 worldPosition, out int column, out int row)
+        {
+            column = 0;
+            row = 0;
 
-        if (gameBoard == null)
-            return false;
+            if (gameBoard == null)
+                return false;
 
-        var minX = boardCenter.x - halfWidth;
-        var maxX = boardCenter.x + halfWidth;
-        var minZ = boardCenter.z - halfHeight;
-        var maxZ = boardCenter.z + halfHeight;
+            var minX = _boardCenter.x - _halfWidth;
+            var maxX = _boardCenter.x + _halfWidth;
+            var minZ = _boardCenter.z - _halfHeight;
+            var maxZ = _boardCenter.z + _halfHeight;
 
-        if (worldPosition.x < minX || worldPosition.x > maxX || worldPosition.z < minZ || worldPosition.z > maxZ)
-            return false;
+            if (worldPosition.x < minX || worldPosition.x > maxX || worldPosition.z < minZ || worldPosition.z > maxZ)
+                return false;
 
-        var localX = worldPosition.x - minX;
-        var localZ = maxZ - worldPosition.z;
+            var localX = worldPosition.x - minX;
+            var localZ = maxZ - worldPosition.z;
 
-        var col = Mathf.FloorToInt(localX / cellSizeX) + 1;
-        var r = Mathf.FloorToInt(localZ / cellSizeZ) + 1;
+            var col = Mathf.FloorToInt(localX / _cellSizeX) + 1;
+            var r = Mathf.FloorToInt(localZ / _cellSizeZ) + 1;
 
-        col = Mathf.Clamp(col, 1, columns);
-        r = Mathf.Clamp(r, 1, rows);
+            col = Mathf.Clamp(col, 1, columns);
+            r = Mathf.Clamp(r, 1, rows);
 
-        column = col;
-        row = r;
-        return true;
+            column = col;
+            row = r;
+            return true;
+        }
     }
 }

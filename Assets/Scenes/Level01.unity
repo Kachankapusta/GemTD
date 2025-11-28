@@ -1274,7 +1274,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PathBlocker
   pathController: {fileID: 896440011}
   grid: {fileID: 2085335767}
-  pathSegmentsRoot: {fileID: 896440010}
 --- !u!4 &487096551 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 849922179907152149, guid: 3d9b1fa40086e3c48a233548b4ad3d40, type: 3}
@@ -1983,7 +1982,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5b0d4280e83ba44784585048f2aac09, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WaveSpawner
-  enemyPrefab: {fileID: 5223142867969033445, guid: ad971dcbe3e0f944bad2cfb58fbf1642, type: 3}
   pathController: {fileID: 896440011}
   enemiesRoot: {fileID: 128632901}
   spawnInterval: 0.5
@@ -5080,12 +5078,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   <Gold>k__BackingField: 0
-  <Lumber>k__BackingField: 0
+  <Lumber>k__BackingField: 5
   <Lives>k__BackingField: 50
-  <Wave>k__BackingField: 1
+  <Wave>k__BackingField: 0
   waveSpawner: {fileID: 814578885}
-  baseEnemiesPerWave: 10
-  enemiesPerWaveIncrement: 0
+  levelWavesConfig: {fileID: 11400000, guid: c270581a4e413f0408eed0c248287b02, type: 2}
+  lumberRewardPerWave: 5
 --- !u!1001 &2114663562
 PrefabInstance:
   m_ObjectHideFlags: 0

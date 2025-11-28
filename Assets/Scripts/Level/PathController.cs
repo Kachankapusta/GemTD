@@ -1,19 +1,22 @@
 using UnityEngine;
 
-public class PathController : MonoBehaviour
+namespace Level
 {
-    [SerializeField] private Transform[] waypoints;
-
-    public Transform[] Waypoints => waypoints;
-
-    private void Awake()
+    public class PathController : MonoBehaviour
     {
-        if (waypoints != null && waypoints.Length > 0)
-            return;
+        [SerializeField] private Transform[] waypoints;
 
-        waypoints = new Transform[transform.childCount];
+        public Transform[] Waypoints => waypoints;
 
-        for (var i = 0; i < transform.childCount; i++)
-            waypoints[i] = transform.GetChild(i);
+        private void Awake()
+        {
+            if (waypoints is { Length: > 0 })
+                return;
+
+            waypoints = new Transform[transform.childCount];
+
+            for (var i = 0; i < transform.childCount; i++)
+                waypoints[i] = transform.GetChild(i);
+        }
     }
 }
