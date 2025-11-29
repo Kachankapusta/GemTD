@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.EnemyConfig
   id: elf_invisible_enemy
   prefab: {fileID: 5223142867969033445, guid: 17d2d87dcbc23914ab2cc9376cb4eccf, type: 3}
-  maxHealth: 90
+  maxHealth: 20
   bounty: 2
   moveSpeed: 4

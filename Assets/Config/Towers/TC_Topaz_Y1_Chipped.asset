@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9408fa6b569fff448bc5774e0873a4a3, type: 3}
+  m_Name: TC_Topaz_Y1_Chipped
+  m_EditorClassIdentifier: Assembly-CSharp::Towers.TowerConfig
+  id: Y1
+  type: 2
+  quality: 0
+  range: 5
+  fireInterval: 1.3
+  damage: 3
+  goldCost: 0
+  abilityDescription: Attacks up to 4 enemies at the same time.

@@ -77,7 +77,7 @@ namespace UI
                 selectButton.gameObject.SetActive(canSelect);
         }
 
-        public void Hide()
+        private void Hide()
         {
             if (panelRoot != null)
                 panelRoot.SetActive(false);

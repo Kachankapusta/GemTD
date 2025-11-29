@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.EnemyConfig
   id: goblin_warrior_enemy
   prefab: {fileID: 5223142867969033445, guid: e35f048331bf6a04582e35357e9d4512, type: 3}
-  maxHealth: 70
+  maxHealth: 10
   bounty: 1
   moveSpeed: 4.5

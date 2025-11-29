@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.EnemyConfig
   id: airship_enemy
   prefab: {fileID: 5223142867969033445, guid: 6cf01bdbcd42361439d4471abb495534, type: 3}
-  maxHealth: 150
+  maxHealth: 30
   bounty: 2
   moveSpeed: 3.5

@@ -2951,9 +2951,47 @@ MonoBehaviour:
   mainCamera: {fileID: 330585545}
   grid: {fileID: 2085335767}
   gameBoard: {fileID: 533180428}
-  towerPrefab: {fileID: 3152682538833340589, guid: c21636f2071895741b5f91cbcb852e37, type: 3}
-  secondTowerPrefab: {fileID: 3152682538833340589, guid: 9a259aa5573170f41bf30c7539d122df, type: 3}
-  thirdTowerPrefab: {fileID: 3152682538833340589, guid: d9d0c399cdfcdf146a417a139fef48ca, type: 3}
+  towerPrefabs:
+  - {fileID: 3152682538833340589, guid: ffe73fc893d222347af5a4034ef28677, type: 3}
+  - {fileID: 3152682538833340589, guid: 25242e08c487c8746a49a6441d724505, type: 3}
+  - {fileID: 3152682538833340589, guid: 1dafeae0cc73d5a4c88bd4b4676f17a0, type: 3}
+  - {fileID: 3152682538833340589, guid: 55057c8b47354ad49ac7b4aeec863b9b, type: 3}
+  - {fileID: 3152682538833340589, guid: 5773a825ed36b354c8040be9a5a33a66, type: 3}
+  - {fileID: 3152682538833340589, guid: fc0f184c69f3a6a48b0c247a572ab45b, type: 3}
+  - {fileID: 3152682538833340589, guid: fb8f4ade9e8fda4458414bd686b6a229, type: 3}
+  - {fileID: 3152682538833340589, guid: 63dd0e92d7d8a8845b916a5363ff9341, type: 3}
+  - {fileID: 3152682538833340589, guid: 06a6bbd3c76ad8448a0e9b7d08def6ba, type: 3}
+  - {fileID: 3152682538833340589, guid: ac7eb2aced014774daa718ea94e40db6, type: 3}
+  - {fileID: 3152682538833340589, guid: 109328adecd513448b87a4777bd745b2, type: 3}
+  - {fileID: 3152682538833340589, guid: 24cd94f7326c6bb43b145470fdb14d06, type: 3}
+  - {fileID: 3152682538833340589, guid: 316fbf0fb35b4cc49bf63ff5c84bc5e0, type: 3}
+  - {fileID: 3152682538833340589, guid: b9d8757ece16ff448b5d21565ec0e6e7, type: 3}
+  - {fileID: 3152682538833340589, guid: 86cf6d706054a2149951e5b233094282, type: 3}
+  - {fileID: 3152682538833340589, guid: f3291c3c6c2ee4a4582372c9d9674bd9, type: 3}
+  - {fileID: 3152682538833340589, guid: 0be7a5995b3aa9949af6b0ec84e2bc7f, type: 3}
+  - {fileID: 3152682538833340589, guid: 5ad0c18facbec824db1c2f298384df0e, type: 3}
+  - {fileID: 3152682538833340589, guid: e654821fbe429fc4e9558cce74ae3118, type: 3}
+  - {fileID: 3152682538833340589, guid: e3d8e79353697424fbee0162cb0b0e96, type: 3}
+  - {fileID: 3152682538833340589, guid: 5d88d3525cd61c344b5a5ce2bd500bbd, type: 3}
+  - {fileID: 3152682538833340589, guid: a6314e63b3fec0545ac0551f74cd9876, type: 3}
+  - {fileID: 3152682538833340589, guid: 0442d5b7c161a414cbf2df7d859f4c03, type: 3}
+  - {fileID: 3152682538833340589, guid: e01d1ed62e0830e4f8fc9b326e3ff520, type: 3}
+  - {fileID: 3152682538833340589, guid: 8931cabb0bc295b45b46ef82b08872b4, type: 3}
+  - {fileID: 3152682538833340589, guid: 1e553f7a57fb27a41a1d80bc8b318179, type: 3}
+  - {fileID: 3152682538833340589, guid: 47c07508095a25047b435bca8cc80a36, type: 3}
+  - {fileID: 3152682538833340589, guid: c61334a1e0c109540bc5af065bb6d1d2, type: 3}
+  - {fileID: 3152682538833340589, guid: 2f99a3028e0d60945ac3a64b26677bbe, type: 3}
+  - {fileID: 3152682538833340589, guid: 4509091912d083844be8019c3e3b0671, type: 3}
+  - {fileID: 3152682538833340589, guid: fdd4521218e79cd44af09e50e0528b4f, type: 3}
+  - {fileID: 3152682538833340589, guid: 33126a6058a00184da900a5813b8dce2, type: 3}
+  - {fileID: 3152682538833340589, guid: 7498fe918c2dc5a41a950aea51b94862, type: 3}
+  - {fileID: 3152682538833340589, guid: 3cfab0373d3b3b247982d18f361465bb, type: 3}
+  - {fileID: 3152682538833340589, guid: 77dafc57b02fd21439aa23e6a8c78552, type: 3}
+  - {fileID: 3152682538833340589, guid: d220a076021ba3e42a58be17a5b980ea, type: 3}
+  - {fileID: 3152682538833340589, guid: 7b5e68ffa426a534f9a44d1c8824864e, type: 3}
+  - {fileID: 3152682538833340589, guid: 14cbd9001cf68de47953f1d56a0ef4c1, type: 3}
+  - {fileID: 3152682538833340589, guid: 77ae893054c15dc41b8bb8c4eb1bfb3f, type: 3}
+  - {fileID: 3152682538833340589, guid: eb8f11985c5b24a47806851da9d6c256, type: 3}
   rockPrefab: {fileID: 8472887948019445234, guid: 123f63db9554d2d4fa06d8d165a46a1a, type: 3}
   towersRoot: {fileID: 683394723}
   pathBlocker: {fileID: 442636321}
@@ -6647,6 +6685,68 @@ MonoBehaviour:
   waveSpawner: {fileID: 814578885}
   levelWavesConfig: {fileID: 11400000, guid: c270581a4e413f0408eed0c248287b02, type: 2}
   lumberRewardPerWave: 5
+  playerLevel: 6
+  towerQualityLevels:
+  - playerLevel: 1
+    chipped: 100
+    flawed: 0
+    normal: 0
+    flawless: 0
+    perfect: 0
+  - playerLevel: 2
+    chipped: 80
+    flawed: 20
+    normal: 0
+    flawless: 0
+    perfect: 0
+  - playerLevel: 3
+    chipped: 60
+    flawed: 35
+    normal: 5
+    flawless: 0
+    perfect: 0
+  - playerLevel: 4
+    chipped: 40
+    flawed: 45
+    normal: 15
+    flawless: 0
+    perfect: 0
+  - playerLevel: 5
+    chipped: 30
+    flawed: 50
+    normal: 20
+    flawless: 0
+    perfect: 0
+  - playerLevel: 6
+    chipped: 30
+    flawed: 40
+    normal: 25
+    flawless: 5
+    perfect: 0
+  - playerLevel: 7
+    chipped: 25
+    flawed: 35
+    normal: 35
+    flawless: 5
+    perfect: 0
+  - playerLevel: 8
+    chipped: 15
+    flawed: 35
+    normal: 35
+    flawless: 15
+    perfect: 0
+  - playerLevel: 9
+    chipped: 5
+    flawed: 20
+    normal: 40
+    flawless: 25
+    perfect: 10
+  - playerLevel: 10
+    chipped: 0
+    flawed: 5
+    normal: 40
+    flawless: 35
+    perfect: 20
 --- !u!1001 &2114663562
 PrefabInstance:
   m_ObjectHideFlags: 0

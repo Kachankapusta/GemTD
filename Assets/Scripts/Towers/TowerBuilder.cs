@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Core;
 using Level;
 using UI;
@@ -13,9 +14,7 @@ namespace Towers
         [SerializeField] private Camera mainCamera;
         [SerializeField] private GridHelper grid;
         [SerializeField] private Transform gameBoard;
-        [SerializeField] private GameObject towerPrefab;
-        [SerializeField] private GameObject secondTowerPrefab;
-        [SerializeField] private GameObject thirdTowerPrefab;
+        [SerializeField] private GameObject[] towerPrefabs;
         [SerializeField] private GameObject rockPrefab;
         [SerializeField] private Transform towersRoot;
         [SerializeField] private PathBlocker pathBlocker;
@@ -169,23 +168,48 @@ namespace Towers
 
         private GameObject GetRandomTowerPrefab()
         {
-            var candidates = new List<GameObject>(3);
+            if (towerPrefabs == null || towerPrefabs.Length == 0)
+                return null;
 
-            if (towerPrefab != null)
-                candidates.Add(towerPrefab);
+            var gameManager = GameManager.Instance;
+            if (gameManager == null)
+                return GetRandomPrefabUniform();
 
-            if (secondTowerPrefab != null)
-                candidates.Add(secondTowerPrefab);
+            var targetQuality = gameManager.RollTowerQuality();
 
-            if (thirdTowerPrefab != null)
-                candidates.Add(thirdTowerPrefab);
+            var candidates = (from prefab in towerPrefabs
+                where prefab != null
+                let tower = prefab.GetComponent<Tower>()
+                where tower != null
+                let config = tower.Config
+                where config != null
+                where config.Quality == targetQuality
+                select prefab).ToList();
 
             if (candidates.Count == 0)
-                return null;
+                return GetRandomPrefabUniform();
 
             var index = Random.Range(0, candidates.Count);
             return candidates[index];
         }
+
+        private GameObject GetRandomPrefabUniform()
+        {
+            var valid = (from prefab in towerPrefabs
+                where prefab != null
+                let tower = prefab.GetComponent<Tower>()
+                where tower != null
+                let config = tower.Config
+                where config != null
+                select prefab).ToList();
+
+            if (valid.Count == 0)
+                return null;
+
+            var index = Random.Range(0, valid.Count);
+            return valid[index];
+        }
+
 
         public void SelectDraftTower(Tower selectedTower)
         {
