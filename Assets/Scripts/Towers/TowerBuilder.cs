@@ -14,24 +14,25 @@ namespace Towers
         [SerializeField] private GridHelper grid;
         [SerializeField] private Transform gameBoard;
         [SerializeField] private GameObject towerPrefab;
+        [SerializeField] private GameObject secondTowerPrefab;
+        [SerializeField] private GameObject thirdTowerPrefab;
         [SerializeField] private GameObject rockPrefab;
         [SerializeField] private Transform towersRoot;
         [SerializeField] private PathBlocker pathBlocker;
         [SerializeField] private HUDController hudController;
         [SerializeField] private float towerY = 0.8f;
 
+        private const int LumberCostPerTower = 1;
         private readonly HashSet<Vector2Int> _occupiedCells = new();
         private readonly List<Tower> _draftTowers = new();
 
         private bool _isPlacing;
-        private bool _selectionMode;
-        private Tower _towerTemplate;
-        public bool IsSelectionMode => _selectionMode;
 
-        private void Awake()
+        public bool IsSelectionMode { get; private set; }
+
+        public bool IsDraftTower(Tower tower)
         {
-            if (towerPrefab != null)
-                _towerTemplate = towerPrefab.GetComponent<Tower>();
+            return tower != null && _draftTowers.Contains(tower);
         }
 
         private void Update()
@@ -42,10 +43,22 @@ namespace Towers
             if (!Mouse.current.leftButton.wasPressedThisFrame)
                 return;
 
-            if (_selectionMode)
-            {
-                HandleSelectionClick();
+            if (mainCamera == null)
                 return;
+
+            var mousePos = Mouse.current.position.ReadValue();
+            var ray = mainCamera.ScreenPointToRay(new Vector3(mousePos.x, mousePos.y, 0f));
+
+            if (Physics.Raycast(ray, out var hit, 1000f))
+            {
+                var tower = hit.collider.GetComponentInParent<Tower>();
+                if (tower != null)
+                {
+                    if (hudController != null)
+                        hudController.ShowTowerPanel(tower);
+
+                    return;
+                }
             }
 
             HandleBuildClick();
@@ -53,7 +66,7 @@ namespace Towers
 
         private void HandleBuildClick()
         {
-            if (mainCamera == null || grid == null || gameBoard == null || towerPrefab == null || pathBlocker == null)
+            if (mainCamera == null || grid == null || gameBoard == null || pathBlocker == null)
                 return;
 
             if (_isPlacing)
@@ -84,72 +97,36 @@ namespace Towers
             }
 
             var gameManager = GameManager.Instance;
-
-            if (gameManager != null && _towerTemplate != null)
+            if (gameManager != null && LumberCostPerTower > 0 && gameManager.Lumber < LumberCostPerTower)
             {
-                var goldCost = _towerTemplate.GoldCost;
-                var lumberCost = _towerTemplate.LumberCost;
+                if (hudController != null)
+                    hudController.ShowBuildError("Not enough lumber.", 2f);
 
-                if (!gameManager.HasEnoughResources(goldCost, lumberCost))
-                {
-                    if (hudController != null)
-                    {
-                        var notEnoughGold = gameManager.Gold < goldCost;
-                        var notEnoughLumber = gameManager.Lumber < lumberCost;
+                return;
+            }
 
-                        string message;
+            var selectedPrefab = GetRandomTowerPrefab();
+            if (selectedPrefab == null)
+            {
+                if (hudController != null)
+                    hudController.ShowBuildError("No towers configured.", 2f);
 
-                        if (notEnoughGold && notEnoughLumber)
-                            message = "Not enough gold and lumber.";
-                        else if (notEnoughGold)
-                            message = "Not enough gold.";
-                        else
-                            message = "Not enough lumber.";
-
-                        hudController.ShowBuildError(message, 2f);
-                    }
-
-                    return;
-                }
+                return;
             }
 
             var center = grid.GetCellCenter(column, row);
             var position = new Vector3(center.x, towerY, center.z);
 
-            var goldCostToPay = _towerTemplate != null ? _towerTemplate.GoldCost : 0;
-            var lumberCostToPay = _towerTemplate != null ? _towerTemplate.LumberCost : 0;
-
-            StartCoroutine(PlaceTower(cell, position, goldCostToPay, lumberCostToPay));
+            StartCoroutine(PlaceTower(cell, position, selectedPrefab));
         }
 
-        private void HandleSelectionClick()
-        {
-            if (mainCamera == null)
-                return;
-
-            var mousePos = Mouse.current.position.ReadValue();
-            var ray = mainCamera.ScreenPointToRay(new Vector3(mousePos.x, mousePos.y, 0f));
-
-            if (!Physics.Raycast(ray, out var hit, 1000f))
-                return;
-
-            var tower = hit.collider.GetComponentInParent<Tower>();
-            if (tower == null)
-                return;
-
-            if (!_draftTowers.Contains(tower))
-                return;
-
-            FinalizeDraft(tower);
-        }
-
-        private IEnumerator PlaceTower(Vector2Int cell, Vector3 position, int goldCost, int lumberCost)
+        private IEnumerator PlaceTower(Vector2Int cell, Vector3 position, GameObject prefab)
         {
             _isPlacing = true;
 
             var instance = towersRoot != null
-                ? Instantiate(towerPrefab, position, Quaternion.identity, towersRoot)
-                : Instantiate(towerPrefab, position, Quaternion.identity);
+                ? Instantiate(prefab, position, Quaternion.identity, towersRoot)
+                : Instantiate(prefab, position, Quaternion.identity);
 
             _occupiedCells.Add(cell);
 
@@ -168,26 +145,60 @@ namespace Towers
             }
 
             var gameManager = GameManager.Instance;
-            if (gameManager != null)
+            if (gameManager != null && LumberCostPerTower > 0)
             {
                 var lumberBefore = gameManager.Lumber;
 
-                gameManager.SpendResources(goldCost, lumberCost);
+                gameManager.SpendResources(0, LumberCostPerTower);
 
                 var tower = instance.GetComponent<Tower>();
                 if (tower != null)
                     _draftTowers.Add(tower);
 
-                if (!_selectionMode && lumberBefore > 0 && gameManager.Lumber == 0 && _draftTowers.Count > 0)
+                if (!IsSelectionMode && lumberBefore > 0 && gameManager.Lumber == 0 && _draftTowers.Count > 0)
                 {
-                    _selectionMode = true;
+                    IsSelectionMode = true;
 
                     if (hudController != null)
-                        hudController.ShowBuildError("Choose one tower to keep. Others will turn into rocks.", 3f);
+                        hudController.ShowBuildError("Choose one tower in its menu. Others will turn into rocks.", 3f);
                 }
             }
 
             _isPlacing = false;
+        }
+
+        private GameObject GetRandomTowerPrefab()
+        {
+            var candidates = new List<GameObject>(3);
+
+            if (towerPrefab != null)
+                candidates.Add(towerPrefab);
+
+            if (secondTowerPrefab != null)
+                candidates.Add(secondTowerPrefab);
+
+            if (thirdTowerPrefab != null)
+                candidates.Add(thirdTowerPrefab);
+
+            if (candidates.Count == 0)
+                return null;
+
+            var index = Random.Range(0, candidates.Count);
+            return candidates[index];
+        }
+
+        public void SelectDraftTower(Tower selectedTower)
+        {
+            if (!IsSelectionMode)
+                return;
+
+            if (selectedTower == null)
+                return;
+
+            if (!_draftTowers.Contains(selectedTower))
+                return;
+
+            FinalizeDraft(selectedTower);
         }
 
         private void FinalizeDraft(Tower selectedTower)
@@ -195,7 +206,7 @@ namespace Towers
             if (rockPrefab == null)
             {
                 _draftTowers.Clear();
-                _selectionMode = false;
+                IsSelectionMode = false;
                 return;
             }
 
@@ -219,7 +230,7 @@ namespace Towers
             }
 
             _draftTowers.Clear();
-            _selectionMode = false;
+            IsSelectionMode = false;
         }
     }
 }

@@ -17,6 +17,7 @@ namespace UI
         [SerializeField] private GameManager gameManager;
         [SerializeField] private float buildErrorDefaultDuration = 2f;
         [SerializeField] private TowerBuilder towerBuilder;
+        [SerializeField] private TowerPanelUI towerPanel;
 
         private float _buildErrorTimer;
 
@@ -94,6 +95,14 @@ namespace UI
 
             buildErrorText.text = message;
             _buildErrorTimer = duration > 0f ? duration : buildErrorDefaultDuration;
+        }
+
+        public void ShowTowerPanel(Tower tower)
+        {
+            if (towerPanel == null)
+                return;
+
+            towerPanel.Show(tower);
         }
     }
 }

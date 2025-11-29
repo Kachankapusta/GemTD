@@ -5,19 +5,25 @@ namespace Towers
 {
     public class Tower : MonoBehaviour
     {
-        [SerializeField] private float range = 5f;
-        [SerializeField] private float fireInterval = 0.5f;
-        [SerializeField] private int damage = 10;
-        [SerializeField] private int goldCost;
-        [SerializeField] private int lumberCost = 1;
-
-        public int GoldCost => goldCost < 0 ? 0 : goldCost;
-        public int LumberCost => lumberCost < 0 ? 0 : lumberCost;
+        [SerializeField] private TowerConfig config;
+        [SerializeField] private float cellSize = 1.5f;
 
         private float _cooldown;
 
+        public TowerConfig Config => config;
+        public string DisplayName => config != null ? config.DisplayName : name;
+        public GemType Type => config != null ? config.Type : default;
+        public GemQuality Quality => config != null ? config.Quality : default;
+        public int Damage => config != null ? config.Damage : 0;
+        public float RangeInCells => config != null ? config.Range : 0f;
+        public float FireInterval => config != null ? config.FireInterval : 0f;
+        public float CellSize => cellSize;
+
         private void Update()
         {
+            if (config == null)
+                return;
+
             if (_cooldown > 0f)
             {
                 _cooldown -= Time.deltaTime;
@@ -28,13 +34,18 @@ namespace Towers
             if (target == null)
                 return;
 
-            target.TakeDamage(damage);
-            _cooldown = fireInterval;
+            target.TakeDamage(config.Damage);
+            _cooldown = config.FireInterval;
         }
 
         private Enemy FindTarget()
         {
-            var hits = Physics.OverlapSphere(transform.position, range);
+            if (config == null)
+                return null;
+
+            var worldRange = config.Range * cellSize;
+
+            var hits = Physics.OverlapSphere(transform.position, worldRange);
             Enemy best = null;
             var bestDistance = float.MaxValue;
 

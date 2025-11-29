@@ -53,17 +53,6 @@ namespace Core
             Lives += delta;
         }
 
-        public bool HasEnoughResources(int goldCost, int lumberCost)
-        {
-            if (goldCost < 0)
-                goldCost = 0;
-
-            if (lumberCost < 0)
-                lumberCost = 0;
-
-            return Gold >= goldCost && Lumber >= lumberCost;
-        }
-
         public void SpendResources(int goldCost, int lumberCost)
         {
             if (goldCost > 0)
@@ -130,8 +119,9 @@ namespace Core
                 return;
             }
 
-            Lumber += lumberRewardPerWave;
+            AddLumber(lumberRewardPerWave);
             _canRewardWaveEnd = false;
         }
+
     }
 }
