@@ -21,45 +21,48 @@ namespace UI
 
         private float _buildErrorTimer;
 
-        private void Awake()
+        private void OnEnable()
         {
             if (startWaveButton != null)
                 startWaveButton.onClick.AddListener(OnStartWaveClicked);
 
             if (buildErrorText != null)
                 buildErrorText.text = string.Empty;
+
+            if (gameManager == null) return;
+            gameManager.GoldChanged += OnGoldChanged;
+            gameManager.LumberChanged += OnLumberChanged;
+            gameManager.LivesChanged += OnLivesChanged;
+            gameManager.WaveChanged += OnWaveChanged;
+
+            UpdateAllTexts();
+        }
+
+        private void OnDisable()
+        {
+            if (startWaveButton != null)
+                startWaveButton.onClick.RemoveListener(OnStartWaveClicked);
+
+            if (gameManager == null)
+                return;
+
+            gameManager.GoldChanged -= OnGoldChanged;
+            gameManager.LumberChanged -= OnLumberChanged;
+            gameManager.LivesChanged -= OnLivesChanged;
+            gameManager.WaveChanged -= OnWaveChanged;
         }
 
         private void Update()
         {
-            if (gameManager != null)
-            {
-                if (goldText != null)
-                    goldText.text = $"Gold: {gameManager.Gold}";
+            if (buildErrorText == null)
+                return;
 
-                if (lumberText != null)
-                    lumberText.text = $"Lumber: {gameManager.Lumber}";
+            if (_buildErrorTimer <= 0f)
+                return;
 
-                if (livesText != null)
-                    livesText.text = $"Lives: {gameManager.Lives}";
-
-                if (waveText != null)
-                    waveText.text = $"Wave: {gameManager.Wave}";
-            }
-
-            if (_buildErrorTimer > 0f)
-            {
-                _buildErrorTimer -= Time.deltaTime;
-
-                if (_buildErrorTimer <= 0f && buildErrorText != null)
-                    buildErrorText.text = string.Empty;
-            }
-        }
-
-        private void OnDestroy()
-        {
-            if (startWaveButton != null)
-                startWaveButton.onClick.RemoveListener(OnStartWaveClicked);
+            _buildErrorTimer -= Time.deltaTime;
+            if (_buildErrorTimer <= 0f)
+                buildErrorText.text = string.Empty;
         }
 
         private void OnStartWaveClicked()
@@ -103,6 +106,41 @@ namespace UI
                 return;
 
             towerPanel.Show(tower);
+        }
+
+        private void UpdateAllTexts()
+        {
+            if (gameManager == null)
+                return;
+
+            OnGoldChanged(gameManager.Gold);
+            OnLumberChanged(gameManager.Lumber);
+            OnLivesChanged(gameManager.Lives);
+            OnWaveChanged(gameManager.Wave);
+        }
+
+        private void OnGoldChanged(int value)
+        {
+            if (goldText != null)
+                goldText.text = $"Gold: {value}";
+        }
+
+        private void OnLumberChanged(int value)
+        {
+            if (lumberText != null)
+                lumberText.text = $"Lumber: {value}";
+        }
+
+        private void OnLivesChanged(int value)
+        {
+            if (livesText != null)
+                livesText.text = $"Lives: {value}";
+        }
+
+        private void OnWaveChanged(int value)
+        {
+            if (waveText != null)
+                waveText.text = $"Wave: {value}";
         }
     }
 }

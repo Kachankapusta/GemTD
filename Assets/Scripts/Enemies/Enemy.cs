@@ -7,11 +7,17 @@ namespace Enemies
     public class Enemy : MonoBehaviour
     {
         [SerializeField] private EnemyConfig config;
+        [SerializeField] private NavMeshAgent agent;
 
         private int _currentHealth;
 
+        public EnemyConfig Config => config;
+
         private void Awake()
         {
+            if (agent == null)
+                agent = GetComponent<NavMeshAgent>();
+
             ApplyConfig();
         }
 
@@ -39,7 +45,6 @@ namespace Enemies
 
             _currentHealth = config.MaxHealth;
 
-            var agent = GetComponent<NavMeshAgent>();
             if (agent != null)
                 agent.speed = config.MoveSpeed;
         }

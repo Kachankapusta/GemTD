@@ -2930,7 +2930,7 @@ GameObject:
   - component: {fileID: 913186326}
   - component: {fileID: 913186325}
   m_Layer: 0
-  m_Name: BuildController
+  m_Name: TowerBuilder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6685,7 +6685,7 @@ MonoBehaviour:
   waveSpawner: {fileID: 814578885}
   levelWavesConfig: {fileID: 11400000, guid: c270581a4e413f0408eed0c248287b02, type: 2}
   lumberRewardPerWave: 5
-  playerLevel: 6
+  playerLevel: 10
   towerQualityLevels:
   - playerLevel: 1
     chipped: 100

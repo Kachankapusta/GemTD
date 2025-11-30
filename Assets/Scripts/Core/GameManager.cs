@@ -20,21 +20,15 @@ namespace Core
 
             public int GetWeight(GemQuality quality)
             {
-                switch (quality)
+                return quality switch
                 {
-                    case GemQuality.Chipped:
-                        return chipped;
-                    case GemQuality.Flawed:
-                        return flawed;
-                    case GemQuality.Normal:
-                        return normal;
-                    case GemQuality.Flawless:
-                        return flawless;
-                    case GemQuality.Perfect:
-                        return perfect;
-                    default:
-                        return 0;
-                }
+                    GemQuality.Chipped => chipped,
+                    GemQuality.Flawed => flawed,
+                    GemQuality.Normal => normal,
+                    GemQuality.Flawless => flawless,
+                    GemQuality.Perfect => perfect,
+                    _ => 0
+                };
             }
         }
 
@@ -49,21 +43,18 @@ namespace Core
         [SerializeField] private int playerLevel = 1;
         [SerializeField] private TowerQualityWeights[] towerQualityLevels;
 
-        public int PlayerLevel => playerLevel;
-
-        public void SetPlayerLevel(int level)
-        {
-            if (level < 1)
-                level = 1;
-            playerLevel = level;
-        }
-
         private int _activeEnemies;
         private bool _canRewardWaveEnd;
 
         public static GameManager Instance { get; private set; }
 
         public bool HasActiveEnemies => _activeEnemies > 0;
+        public int PlayerLevel => playerLevel;
+
+        public event Action<int> GoldChanged;
+        public event Action<int> LumberChanged;
+        public event Action<int> LivesChanged;
+        public event Action<int> WaveChanged;
 
         private void Awake()
         {
@@ -76,12 +67,24 @@ namespace Core
             Instance = this;
         }
 
+        public void SetPlayerLevel(int level)
+        {
+            if (level < 1)
+                level = 1;
+
+            playerLevel = level;
+        }
+
         public void AddGold(int amount)
         {
             if (amount <= 0)
                 return;
 
             Gold += amount;
+            if (Gold < 0)
+                Gold = 0;
+
+            GoldChanged?.Invoke(Gold);
         }
 
         public void AddLumber(int amount)
@@ -90,20 +93,50 @@ namespace Core
                 return;
 
             Lumber += amount;
+            if (Lumber < 0)
+                Lumber = 0;
+
+            LumberChanged?.Invoke(Lumber);
         }
 
         public void ChangeLives(int delta)
         {
+            if (delta == 0)
+                return;
+
             Lives += delta;
+            if (Lives < 0)
+                Lives = 0;
+
+            LivesChanged?.Invoke(Lives);
         }
 
         public void SpendResources(int goldCost, int lumberCost)
         {
+            var changedGold = false;
+            var changedLumber = false;
+
             if (goldCost > 0)
+            {
                 Gold -= goldCost;
+                if (Gold < 0)
+                    Gold = 0;
+                changedGold = true;
+            }
 
             if (lumberCost > 0)
+            {
                 Lumber -= lumberCost;
+                if (Lumber < 0)
+                    Lumber = 0;
+                changedLumber = true;
+            }
+
+            if (changedGold)
+                GoldChanged?.Invoke(Gold);
+
+            if (changedLumber)
+                LumberChanged?.Invoke(Lumber);
         }
 
         public void NextWave()
@@ -121,7 +154,6 @@ namespace Core
                 return;
 
             var nextWaveNumber = Wave + 1;
-
             var waveDefinition = levelWavesConfig.GetWaveByNumber(nextWaveNumber);
             if (waveDefinition == null)
                 return;
@@ -131,6 +163,7 @@ namespace Core
 
             waveSpawner.StartWave(waveDefinition);
             Wave = nextWaveNumber;
+            WaveChanged?.Invoke(Wave);
         }
 
         public void RegisterEnemySpawn()
@@ -202,10 +235,7 @@ namespace Core
                 return GemQuality.Normal;
             roll -= wNormal;
 
-            if (roll < wFlawless)
-                return GemQuality.Flawless;
-
-            return GemQuality.Perfect;
+            return roll < wFlawless ? GemQuality.Flawless : GemQuality.Perfect;
         }
 
         private TowerQualityWeights GetQualityRowForLevel(int level)

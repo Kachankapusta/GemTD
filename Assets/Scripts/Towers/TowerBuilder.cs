@@ -36,45 +36,54 @@ namespace Towers
 
         private void Update()
         {
-            if (Mouse.current == null)
+            if (!IsBuildInputTriggered())
                 return;
 
-            if (!Mouse.current.leftButton.wasPressedThisFrame)
+            if (!TryGetMouseHit(out var hit))
                 return;
+
+            if (TryHandleTowerSelection(hit))
+                return;
+
+            HandleBuildClick(hit);
+        }
+
+        private static bool IsBuildInputTriggered()
+        {
+            return Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame;
+        }
+
+        private bool TryGetMouseHit(out RaycastHit hit)
+        {
+            hit = default;
 
             if (mainCamera == null)
-                return;
+                return false;
 
             var mousePos = Mouse.current.position.ReadValue();
             var ray = mainCamera.ScreenPointToRay(new Vector3(mousePos.x, mousePos.y, 0f));
 
-            if (Physics.Raycast(ray, out var hit, 1000f))
-            {
-                var tower = hit.collider.GetComponentInParent<Tower>();
-                if (tower != null)
-                {
-                    if (hudController != null)
-                        hudController.ShowTowerPanel(tower);
-
-                    return;
-                }
-            }
-
-            HandleBuildClick();
+            return Physics.Raycast(ray, out hit, 1000f);
         }
 
-        private void HandleBuildClick()
+        private bool TryHandleTowerSelection(RaycastHit hit)
         {
-            if (mainCamera == null || grid == null || gameBoard == null || pathBlocker == null)
+            var tower = hit.collider.GetComponentInParent<Tower>();
+            if (tower == null)
+                return false;
+
+            if (hudController != null)
+                hudController.ShowTowerPanel(tower);
+
+            return true;
+        }
+
+        private void HandleBuildClick(RaycastHit hit)
+        {
+            if (grid == null || gameBoard == null || pathBlocker == null)
                 return;
 
             if (_isPlacing)
-                return;
-
-            var mousePos = Mouse.current.position.ReadValue();
-            var ray = mainCamera.ScreenPointToRay(new Vector3(mousePos.x, mousePos.y, 0f));
-
-            if (!Physics.Raycast(ray, out var hit, 1000f))
                 return;
 
             if (hit.collider.transform != gameBoard)
@@ -210,7 +219,6 @@ namespace Towers
             return valid[index];
         }
 
-
         public void SelectDraftTower(Tower selectedTower)
         {
             if (!IsSelectionMode)
@@ -227,31 +235,18 @@ namespace Towers
 
         private void FinalizeDraft(Tower selectedTower)
         {
-            if (rockPrefab == null)
-            {
-                _draftTowers.Clear();
-                IsSelectionMode = false;
-                return;
-            }
-
-            foreach (var tower in _draftTowers)
-            {
-                if (tower == null)
-                    continue;
-
-                if (tower == selectedTower)
-                    continue;
-
-                var tr = tower.transform;
-                var position = tr.position;
-                var rotation = tr.rotation;
-
-                var rockInstance = towersRoot != null
-                    ? Instantiate(rockPrefab, position, rotation, towersRoot)
-                    : Instantiate(rockPrefab, position, rotation);
-
+            foreach (var tower in from tower in _draftTowers
+                     where tower != null
+                     where tower != selectedTower
+                     where rockPrefab != null
+                     let tr = tower.transform
+                     let position = tr.position
+                     let rotation = tr.rotation
+                     let rockInstance = towersRoot != null
+                         ? Instantiate(rockPrefab, position, rotation, towersRoot)
+                         : Instantiate(rockPrefab, position, rotation)
+                     select tower)
                 Destroy(tower.gameObject);
-            }
 
             _draftTowers.Clear();
             IsSelectionMode = false;
