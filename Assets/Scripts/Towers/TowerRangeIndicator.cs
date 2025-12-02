@@ -11,7 +11,7 @@ namespace Towers
             if (tower == null || visual == null || tower.Config == null)
                 return;
 
-            var worldRange = tower.RangeInCells * tower.CellSize;
+            var worldRange = tower.WorldRange;
             var diameter = worldRange * 2f;
 
             var parent = visual.parent;

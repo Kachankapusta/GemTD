@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.EnemyConfig
   id: human_warrior_enemy
   prefab: {fileID: 5223142867969033445, guid: ad971dcbe3e0f944bad2cfb58fbf1642, type: 3}
-  maxHealth: 50
+  maxHealth: 5
   bounty: 1
   moveSpeed: 3.5

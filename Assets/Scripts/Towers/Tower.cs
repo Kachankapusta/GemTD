@@ -22,7 +22,7 @@ namespace Towers
         public float RangeInCells => config != null ? config.Range : 0f;
         public float FireInterval => config != null ? config.FireInterval : 0f;
         public float CellSize => cellSize;
-        public float WorldRange => config != null ? config.Range * cellSize : 0f;
+        public float WorldRange => config != null ? (config.Range + 0.5f) * cellSize : 0f;
 
         private void Update()
         {
@@ -64,9 +64,7 @@ namespace Towers
             if (config == null)
                 return null;
 
-            var worldRange = WorldRange;
-
-            var hits = Physics.OverlapSphere(transform.position, worldRange);
+            var hits = Physics.OverlapSphere(transform.position, WorldRange);
             Enemy best = null;
             var bestDistance = float.MaxValue;
 
