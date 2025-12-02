@@ -45,6 +45,13 @@ namespace Towers
             if (TryHandleTowerSelection(hit))
                 return;
 
+            var gameManager = GameManager.Instance;
+            if (gameManager == null)
+                return;
+
+            if (gameManager.State != GameState.BuildPhase)
+                return;
+
             HandleBuildClick(hit);
         }
 
@@ -140,18 +147,6 @@ namespace Towers
 
             yield return null;
 
-            if (!pathBlocker.IsPathValid())
-            {
-                _occupiedCells.Remove(cell);
-
-                if (hudController != null)
-                    hudController.ShowBuildError("You must leave a path from start to end.", 2f);
-
-                Destroy(instance);
-                _isPlacing = false;
-                yield break;
-            }
-
             var gameManager = GameManager.Instance;
             if (gameManager != null && LumberCostPerTower > 0)
             {
@@ -172,6 +167,15 @@ namespace Towers
                 }
             }
 
+            if (pathBlocker != null && !pathBlocker.IsPathValid())
+            {
+                _occupiedCells.Remove(cell);
+                Destroy(instance);
+
+                if (hudController != null)
+                    hudController.ShowBuildError("Placing this tower would block the path.", 2f);
+            }
+
             _isPlacing = false;
         }
 
@@ -181,42 +185,39 @@ namespace Towers
                 return null;
 
             var gameManager = GameManager.Instance;
-            if (gameManager == null)
-                return GetRandomPrefabUniform();
 
-            var targetQuality = gameManager.RollTowerQuality();
+            var useQualityFilter = gameManager != null;
+            var targetQuality = GemQuality.Chipped;
 
-            var candidates = (from prefab in towerPrefabs
-                where prefab != null
-                let tower = prefab.GetComponent<Tower>()
-                where tower != null
-                let config = tower.Config
-                where config != null
-                where config.Quality == targetQuality
-                select prefab).ToList();
+            if (gameManager != null)
+                targetQuality = gameManager.GetRandomQualityForCurrentLevel();
+
+            var candidates = new List<GameObject>();
+
+            foreach (var prefab in towerPrefabs)
+            {
+                if (prefab == null)
+                    continue;
+
+                var tower = prefab.GetComponent<Tower>();
+                if (tower == null)
+                    continue;
+
+                var config = tower.Config;
+                if (config == null)
+                    continue;
+
+                if (useQualityFilter && config.Quality != targetQuality)
+                    continue;
+
+                candidates.Add(prefab);
+            }
 
             if (candidates.Count == 0)
-                return GetRandomPrefabUniform();
+                return null;
 
             var index = Random.Range(0, candidates.Count);
             return candidates[index];
-        }
-
-        private GameObject GetRandomPrefabUniform()
-        {
-            var valid = (from prefab in towerPrefabs
-                where prefab != null
-                let tower = prefab.GetComponent<Tower>()
-                where tower != null
-                let config = tower.Config
-                where config != null
-                select prefab).ToList();
-
-            if (valid.Count == 0)
-                return null;
-
-            var index = Random.Range(0, valid.Count);
-            return valid[index];
         }
 
         public void SelectDraftTower(Tower selectedTower)

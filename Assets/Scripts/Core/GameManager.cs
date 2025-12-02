@@ -6,6 +6,13 @@ using Random = UnityEngine.Random;
 
 namespace Core
 {
+    public enum GameState
+    {
+        BuildPhase,
+        CombatPhase,
+        GameOver
+    }
+
     public class GameManager : MonoBehaviour
     {
         [Serializable]
@@ -30,12 +37,17 @@ namespace Core
                     _ => 0
                 };
             }
+
+            public int TotalWeight =>
+                chipped + flawed + normal + flawless + perfect;
         }
 
         [field: SerializeField] public int Gold { get; private set; }
         [field: SerializeField] public int Lumber { get; private set; }
         [field: SerializeField] public int Lives { get; private set; } = 50;
         [field: SerializeField] public int Wave { get; private set; }
+
+        [field: SerializeField] public GameState State { get; private set; } = GameState.BuildPhase;
 
         [SerializeField] private WaveSpawner waveSpawner;
         [SerializeField] private LevelWavesConfig levelWavesConfig;
@@ -55,6 +67,7 @@ namespace Core
         public event Action<int> LumberChanged;
         public event Action<int> LivesChanged;
         public event Action<int> WaveChanged;
+        public event Action<GameState> GameStateChanged;
 
         private void Awake()
         {
@@ -65,6 +78,15 @@ namespace Core
             }
 
             Instance = this;
+        }
+
+        private void SetState(GameState newState)
+        {
+            if (State == newState)
+                return;
+
+            State = newState;
+            GameStateChanged?.Invoke(State);
         }
 
         public void SetPlayerLevel(int level)
@@ -109,6 +131,9 @@ namespace Core
                 Lives = 0;
 
             LivesChanged?.Invoke(Lives);
+
+            if (Lives <= 0 && State != GameState.GameOver)
+                SetState(GameState.GameOver);
         }
 
         public void SpendResources(int goldCost, int lumberCost)
@@ -144,6 +169,9 @@ namespace Core
             if (waveSpawner == null)
                 return;
 
+            if (State != GameState.BuildPhase)
+                return;
+
             if (waveSpawner.IsSpawning)
                 return;
 
@@ -154,6 +182,7 @@ namespace Core
                 return;
 
             var nextWaveNumber = Wave + 1;
+
             var waveDefinition = levelWavesConfig.GetWaveByNumber(nextWaveNumber);
             if (waveDefinition == null)
                 return;
@@ -162,6 +191,8 @@ namespace Core
             _canRewardWaveEnd = true;
 
             waveSpawner.StartWave(waveDefinition);
+            SetState(GameState.CombatPhase);
+
             Wave = nextWaveNumber;
             WaveChanged?.Invoke(Wave);
         }
@@ -190,14 +221,17 @@ namespace Core
             if (waveSpawner != null && waveSpawner.IsSpawning)
                 return;
 
-            if (lumberRewardPerWave <= 0)
+            if (Lives <= 0)
             {
                 _canRewardWaveEnd = false;
                 return;
             }
 
-            AddLumber(lumberRewardPerWave);
+            if (lumberRewardPerWave > 0)
+                AddLumber(lumberRewardPerWave);
+
             _canRewardWaveEnd = false;
+            SetState(GameState.BuildPhase);
         }
 
         public GemQuality RollTowerQuality()
@@ -235,7 +269,10 @@ namespace Core
                 return GemQuality.Normal;
             roll -= wNormal;
 
-            return roll < wFlawless ? GemQuality.Flawless : GemQuality.Perfect;
+            if (roll < wFlawless)
+                return GemQuality.Flawless;
+
+            return GemQuality.Perfect;
         }
 
         private TowerQualityWeights GetQualityRowForLevel(int level)
@@ -251,14 +288,48 @@ namespace Core
                 if (row == null)
                     continue;
 
-                if (row.playerLevel <= level && row.playerLevel > bestLevel)
-                {
-                    best = row;
-                    bestLevel = row.playerLevel;
-                }
+                if (row.playerLevel > level || row.playerLevel <= bestLevel) continue;
+                best = row;
+                bestLevel = row.playerLevel;
             }
 
             return best;
         }
+        
+        public GemQuality GetRandomQualityForLevel(int level)
+        {
+            var row = GetQualityRowForLevel(level);
+            if (row == null)
+                return GemQuality.Chipped;
+
+            var total = row.TotalWeight;
+            if (total <= 0)
+                return GemQuality.Chipped;
+
+            var roll = Random.Range(0, total);
+
+            if (roll < row.chipped)
+                return GemQuality.Chipped;
+            roll -= row.chipped;
+
+            if (roll < row.flawed)
+                return GemQuality.Flawed;
+            roll -= row.flawed;
+
+            if (roll < row.normal)
+                return GemQuality.Normal;
+            roll -= row.normal;
+
+            if (roll < row.flawless)
+                return GemQuality.Flawless;
+
+            return GemQuality.Perfect;
+        }
+
+        public GemQuality GetRandomQualityForCurrentLevel()
+        {
+            return GetRandomQualityForLevel(playerLevel);
+        }
+
     }
 }

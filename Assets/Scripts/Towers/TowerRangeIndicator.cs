@@ -11,13 +11,18 @@ namespace Towers
             if (tower == null || visual == null || tower.Config == null)
                 return;
 
-            var cellSize = tower.CellSize;
-            var worldRange = tower.RangeInCells * cellSize;
+            var worldRange = tower.RangeInCells * tower.CellSize;
             var diameter = worldRange * 2f;
 
+            var parent = visual.parent;
+            var parentScale = parent != null ? parent.lossyScale : Vector3.one;
+
             var scale = visual.localScale;
-            scale.x = diameter;
-            scale.z = diameter;
+            var safeParentScaleX = parentScale.x != 0f ? parentScale.x : 1f;
+            var safeParentScaleZ = parentScale.z != 0f ? parentScale.z : 1f;
+
+            scale.x = diameter / safeParentScaleX;
+            scale.z = diameter / safeParentScaleZ;
             visual.localScale = scale;
         }
 

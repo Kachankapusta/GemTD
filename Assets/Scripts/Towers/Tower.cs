@@ -7,6 +7,10 @@ namespace Towers
     {
         [SerializeField] private TowerConfig config;
         [SerializeField] private float cellSize = 1.5f;
+        [SerializeField] private TowerProjectile projectilePrefab;
+        [SerializeField] private Transform firePoint;
+        [SerializeField] private float projectileSpeed = 10f;
+        [SerializeField] private float projectileMaxLifetime = 5f;
 
         private float _cooldown;
 
@@ -18,6 +22,7 @@ namespace Towers
         public float RangeInCells => config != null ? config.Range : 0f;
         public float FireInterval => config != null ? config.FireInterval : 0f;
         public float CellSize => cellSize;
+        public float WorldRange => config != null ? config.Range * cellSize : 0f;
 
         private void Update()
         {
@@ -34,8 +39,24 @@ namespace Towers
             if (target == null)
                 return;
 
-            target.TakeDamage(config.Damage);
+            FireAt(target);
             _cooldown = config.FireInterval;
+        }
+
+        private void FireAt(Enemy target)
+        {
+            if (target == null)
+                return;
+
+            if (projectilePrefab == null)
+            {
+                target.TakeDamage(config.Damage);
+                return;
+            }
+
+            var spawnPosition = firePoint != null ? firePoint.position : transform.position;
+            var instance = Instantiate(projectilePrefab, spawnPosition, Quaternion.identity);
+            instance.Init(target, config.Damage, projectileSpeed, projectileMaxLifetime);
         }
 
         private Enemy FindTarget()
@@ -43,7 +64,7 @@ namespace Towers
             if (config == null)
                 return null;
 
-            var worldRange = config.Range * cellSize;
+            var worldRange = WorldRange;
 
             var hits = Physics.OverlapSphere(transform.position, worldRange);
             Enemy best = null;
@@ -56,11 +77,9 @@ namespace Towers
                     continue;
 
                 var distance = (enemy.transform.position - transform.position).sqrMagnitude;
-                if (distance < bestDistance)
-                {
-                    bestDistance = distance;
-                    best = enemy;
-                }
+                if (!(distance < bestDistance)) continue;
+                bestDistance = distance;
+                best = enemy;
             }
 
             return best;

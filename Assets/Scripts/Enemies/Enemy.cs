@@ -1,3 +1,4 @@
+using System;
 using Core;
 using UnityEngine;
 using UnityEngine.AI;
@@ -12,6 +13,12 @@ namespace Enemies
         private int _currentHealth;
 
         public EnemyConfig Config => config;
+
+        public float HealthPercent => config != null && config.MaxHealth > 0
+            ? (float)_currentHealth / config.MaxHealth
+            : 0f;
+
+        public event Action<float> HealthChanged;
 
         private void Awake()
         {
@@ -34,6 +41,11 @@ namespace Enemies
 
             _currentHealth -= amount;
 
+            if (_currentHealth < 0)
+                _currentHealth = 0;
+
+            RaiseHealthChanged();
+
             if (_currentHealth <= 0)
                 Die();
         }
@@ -47,6 +59,14 @@ namespace Enemies
 
             if (agent != null)
                 agent.speed = config.MoveSpeed;
+
+            RaiseHealthChanged();
+        }
+
+        private void RaiseHealthChanged()
+        {
+            var percent = HealthPercent;
+            HealthChanged?.Invoke(percent);
         }
 
         private void Die()

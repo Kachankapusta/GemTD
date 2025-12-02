@@ -29,13 +29,17 @@ namespace UI
             if (buildErrorText != null)
                 buildErrorText.text = string.Empty;
 
-            if (gameManager == null) return;
+            if (gameManager == null)
+                return;
+
             gameManager.GoldChanged += OnGoldChanged;
             gameManager.LumberChanged += OnLumberChanged;
             gameManager.LivesChanged += OnLivesChanged;
             gameManager.WaveChanged += OnWaveChanged;
+            gameManager.GameStateChanged += OnGameStateChanged;
 
             UpdateAllTexts();
+            OnGameStateChanged(gameManager.State);
         }
 
         private void OnDisable()
@@ -50,6 +54,7 @@ namespace UI
             gameManager.LumberChanged -= OnLumberChanged;
             gameManager.LivesChanged -= OnLivesChanged;
             gameManager.WaveChanged -= OnWaveChanged;
+            gameManager.GameStateChanged -= OnGameStateChanged;
         }
 
         private void Update()
@@ -69,6 +74,14 @@ namespace UI
         {
             if (gameManager == null)
                 return;
+
+            if (gameManager.State != GameState.BuildPhase)
+            {
+                if (gameManager.State == GameState.GameOver)
+                    ShowBuildError("Game over.", 2f);
+
+                return;
+            }
 
             if (towerBuilder != null && towerBuilder.IsSelectionMode)
             {
@@ -141,6 +154,12 @@ namespace UI
         {
             if (waveText != null)
                 waveText.text = $"Wave: {value}";
+        }
+
+        private void OnGameStateChanged(GameState state)
+        {
+            if (startWaveButton != null)
+                startWaveButton.interactable = state == GameState.BuildPhase;
         }
     }
 }
