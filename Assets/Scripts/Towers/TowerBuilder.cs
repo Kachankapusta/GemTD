@@ -192,26 +192,14 @@ namespace Towers
             if (gameManager != null)
                 targetQuality = gameManager.GetRandomQualityForCurrentLevel();
 
-            var candidates = new List<GameObject>();
-
-            foreach (var prefab in towerPrefabs)
-            {
-                if (prefab == null)
-                    continue;
-
-                var tower = prefab.GetComponent<Tower>();
-                if (tower == null)
-                    continue;
-
-                var config = tower.Config;
-                if (config == null)
-                    continue;
-
-                if (useQualityFilter && config.Quality != targetQuality)
-                    continue;
-
-                candidates.Add(prefab);
-            }
+            var candidates = (from prefab in towerPrefabs
+                where prefab != null
+                let tower = prefab.GetComponent<Tower>()
+                where tower != null
+                let config = tower.Config
+                where config != null
+                where !useQualityFilter || config.Quality == targetQuality
+                select prefab).ToList();
 
             if (candidates.Count == 0)
                 return null;

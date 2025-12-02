@@ -295,7 +295,7 @@ namespace Core
 
             return best;
         }
-        
+
         public GemQuality GetRandomQualityForLevel(int level)
         {
             var row = GetQualityRowForLevel(level);
@@ -330,6 +330,5 @@ namespace Core
         {
             return GetRandomQualityForLevel(playerLevel);
         }
-
     }
 }

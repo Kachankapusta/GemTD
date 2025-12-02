@@ -20,11 +20,9 @@ namespace Towers
             speed = projectileSpeed;
             maxLifetime = lifetime > 0f ? lifetime : maxLifetime;
 
-            if (_target != null)
-            {
-                _hasTarget = true;
-                _lastKnownTargetPosition = _target.transform.position;
-            }
+            if (_target == null) return;
+            _hasTarget = true;
+            _lastKnownTargetPosition = _target.transform.position;
         }
 
         private void Update()
@@ -56,11 +54,9 @@ namespace Towers
             _lastKnownTargetPosition = _target.transform.position;
             MoveTowards(_lastKnownTargetPosition);
 
-            if (Vector3.Distance(transform.position, _lastKnownTargetPosition) <= 0.1f)
-            {
-                _target.TakeDamage(damage);
-                Destroy(gameObject);
-            }
+            if (!(Vector3.Distance(transform.position, _lastKnownTargetPosition) <= 0.1f)) return;
+            _target.TakeDamage(damage);
+            Destroy(gameObject);
         }
 
         private void MoveTowards(Vector3 targetPosition)
