@@ -6,12 +6,6 @@ namespace Towers
     public class TowerDebugText : MonoBehaviour
     {
         [SerializeField] private TextMeshPro[] labels;
-        [SerializeField] private string[] texts;
-
-        private void OnValidate()
-        {
-            ApplyTexts();
-        }
 
         private void Awake()
         {
@@ -20,18 +14,40 @@ namespace Towers
 
         private void ApplyTexts()
         {
-            if (labels == null || texts == null)
+            if (labels == null || labels.Length == 0)
                 return;
 
-            var count = Mathf.Min(labels.Length, texts.Length);
+            var qualityText = GetQualityTextFromName();
+            if (string.IsNullOrEmpty(qualityText))
+                return;
 
-            for (var i = 0; i < count; i++)
+            foreach (var label in labels)
             {
-                if (labels[i] == null)
+                if (label == null)
                     continue;
-
-                labels[i].text = texts[i];
+                label.gameObject.SetActive(true);
+                label.text = qualityText;
             }
+        }
+
+        private string GetQualityTextFromName()
+        {
+            var nameLower = GetNameForDetect().ToLowerInvariant();
+
+            return nameLower.Contains("chipped") ? "I" :
+                nameLower.Contains("flawed") ? "II" :
+                nameLower.Contains("normal") ? "III" :
+                nameLower.Contains("flawless") ? "IV" :
+                nameLower.Contains("perfect") ? "V" :
+                string.Empty;
+        }
+
+        private string GetNameForDetect()
+        {
+            var tower = GetComponentInParent<Tower>();
+            return tower != null
+                ? tower.gameObject.name
+                : gameObject.name;
         }
     }
 }
