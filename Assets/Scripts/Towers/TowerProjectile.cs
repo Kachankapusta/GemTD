@@ -1,4 +1,4 @@
-﻿using Enemies;
+﻿using Combat;
 using UnityEngine;
 
 namespace Towers
@@ -9,20 +9,22 @@ namespace Towers
         [SerializeField] private int damage = 1;
         [SerializeField] private float maxLifetime = 5f;
 
-        private Enemy _target;
+        private IDamageable _target;
         private Vector3 _lastKnownTargetPosition;
         private bool _hasTarget;
 
-        public void Init(Enemy target, int damageAmount, float projectileSpeed, float lifetime)
+        public void Init(IDamageable target, int damageAmount, float projectileSpeed, float lifetime)
         {
             _target = target;
             damage = damageAmount;
             speed = projectileSpeed;
             maxLifetime = lifetime > 0f ? lifetime : maxLifetime;
 
-            if (_target == null) return;
+            if (_target == null || !_target.IsAlive)
+                return;
+
             _hasTarget = true;
-            _lastKnownTargetPosition = _target.transform.position;
+            _lastKnownTargetPosition = _target.Position;
         }
 
         private void Update()
@@ -37,12 +39,13 @@ namespace Towers
                 }
             }
 
-            if (_target == null)
+            if (_target == null || !_target.IsAlive)
             {
                 if (_hasTarget)
                 {
                     MoveTowards(_lastKnownTargetPosition);
-                    if (Vector3.Distance(transform.position, _lastKnownTargetPosition) <= 0.05f) Destroy(gameObject);
+                    if (Vector3.Distance(transform.position, _lastKnownTargetPosition) <= 0.05f)
+                        Destroy(gameObject);
 
                     return;
                 }
@@ -51,10 +54,12 @@ namespace Towers
                 return;
             }
 
-            _lastKnownTargetPosition = _target.transform.position;
+            _lastKnownTargetPosition = _target.Position;
             MoveTowards(_lastKnownTargetPosition);
 
-            if (!(Vector3.Distance(transform.position, _lastKnownTargetPosition) <= 0.1f)) return;
+            if (Vector3.Distance(transform.position, _lastKnownTargetPosition) > 0.1f)
+                return;
+
             _target.TakeDamage(damage);
             Destroy(gameObject);
         }

@@ -1,11 +1,12 @@
 using System;
+using Combat;
 using Core;
 using UnityEngine;
 using UnityEngine.AI;
 
 namespace Enemies
 {
-    public class Enemy : MonoBehaviour
+    public class Enemy : MonoBehaviour, IDamageable
     {
         [SerializeField] private EnemyConfig config;
         [SerializeField] private NavMeshAgent agent;
@@ -17,6 +18,10 @@ namespace Enemies
         public float HealthPercent => config != null && config.MaxHealth > 0
             ? (float)_currentHealth / config.MaxHealth
             : 0f;
+
+        public bool IsAlive => _currentHealth > 0;
+
+        public Vector3 Position => transform.position;
 
         public event Action<float> HealthChanged;
 
@@ -37,6 +42,9 @@ namespace Enemies
         public void TakeDamage(int amount)
         {
             if (amount <= 0)
+                return;
+
+            if (!IsAlive)
                 return;
 
             _currentHealth -= amount;

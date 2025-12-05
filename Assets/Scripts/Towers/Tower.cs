@@ -1,4 +1,4 @@
-using Enemies;
+using Combat;
 using UnityEngine;
 
 namespace Towers
@@ -36,16 +36,16 @@ namespace Towers
             }
 
             var target = FindTarget();
-            if (target == null)
+            if (target == null || !target.IsAlive)
                 return;
 
             FireAt(target);
             _cooldown = config.FireInterval;
         }
 
-        private void FireAt(Enemy target)
+        private void FireAt(IDamageable target)
         {
-            if (target == null)
+            if (target == null || !target.IsAlive)
                 return;
 
             if (projectilePrefab == null)
@@ -59,25 +59,27 @@ namespace Towers
             instance.Init(target, config.Damage, projectileSpeed, projectileMaxLifetime);
         }
 
-        private Enemy FindTarget()
+        private IDamageable FindTarget()
         {
             if (config == null)
                 return null;
 
             var hits = Physics.OverlapSphere(transform.position, WorldRange);
-            Enemy best = null;
+            IDamageable best = null;
             var bestDistance = float.MaxValue;
 
             foreach (var t in hits)
             {
-                var enemy = t.GetComponent<Enemy>();
-                if (enemy == null)
+                var damageable = t.GetComponentInParent<IDamageable>();
+                if (damageable == null || !damageable.IsAlive)
                     continue;
 
-                var distance = (enemy.transform.position - transform.position).sqrMagnitude;
-                if (!(distance < bestDistance)) continue;
+                var distance = (damageable.Position - transform.position).sqrMagnitude;
+                if (!(distance < bestDistance))
+                    continue;
+
                 bestDistance = distance;
-                best = enemy;
+                best = damageable;
             }
 
             return best;
