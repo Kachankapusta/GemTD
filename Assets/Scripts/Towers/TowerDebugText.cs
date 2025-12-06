@@ -3,6 +3,8 @@ using UnityEngine;
 
 namespace Towers
 {
+    [DisallowMultipleComponent]
+    [RequireComponent(typeof(TextMeshPro))]
     public class TowerDebugText : MonoBehaviour
     {
         [SerializeField] private TextMeshPro[] labels;

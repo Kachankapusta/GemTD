@@ -6,6 +6,7 @@ using UnityEngine.UI;
 
 namespace UI
 {
+    [DisallowMultipleComponent]
     public class TowerPanelUI : MonoBehaviour
     {
         [SerializeField] private GameObject panelRoot;
@@ -18,9 +19,9 @@ namespace UI
         [SerializeField] private Button upgradeButton;
         [SerializeField] private Button selectButton;
         [SerializeField] private TowerBuilder towerBuilder;
+        private TowerRangeIndicator _currentRangeIndicator;
 
         private Tower _currentTower;
-        private TowerRangeIndicator _currentRangeIndicator;
         private bool _rangeVisible;
 
         private void Awake()

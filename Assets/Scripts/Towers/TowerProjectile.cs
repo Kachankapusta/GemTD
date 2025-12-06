@@ -3,74 +3,68 @@ using UnityEngine;
 
 namespace Towers
 {
+    [DisallowMultipleComponent]
     public class TowerProjectile : MonoBehaviour
     {
-        [SerializeField] private float speed = 10f;
-        [SerializeField] private int damage = 1;
-        [SerializeField] private float maxLifetime = 5f;
+        [Min(0f)] [SerializeField] private float speed = 10f;
+
+        [Min(0f)] [SerializeField] private float maxLifetime = 5f;
+
+        private int _damage;
+        private bool _initialized;
+        private float _lifetime;
 
         private IDamageable _target;
-        private Vector3 _lastKnownTargetPosition;
-        private bool _hasTarget;
-
-        public void Init(IDamageable target, int damageAmount, float projectileSpeed, float lifetime)
-        {
-            _target = target;
-            damage = damageAmount;
-            speed = projectileSpeed;
-            maxLifetime = lifetime > 0f ? lifetime : maxLifetime;
-
-            if (_target == null || !_target.IsAlive)
-                return;
-
-            _hasTarget = true;
-            _lastKnownTargetPosition = _target.Position;
-        }
 
         private void Update()
         {
-            if (maxLifetime > 0f)
+            if (!_initialized)
+                return;
+
+            _lifetime += Time.deltaTime;
+            if (_lifetime >= maxLifetime || _target is not { IsAlive: true })
             {
-                maxLifetime -= Time.deltaTime;
-                if (maxLifetime <= 0f)
-                {
-                    Destroy(gameObject);
-                    return;
-                }
-            }
-
-            if (_target == null || !_target.IsAlive)
-            {
-                if (_hasTarget)
-                {
-                    MoveTowards(_lastKnownTargetPosition);
-                    if (Vector3.Distance(transform.position, _lastKnownTargetPosition) <= 0.05f)
-                        Destroy(gameObject);
-
-                    return;
-                }
-
                 Destroy(gameObject);
                 return;
             }
 
-            _lastKnownTargetPosition = _target.Position;
-            MoveTowards(_lastKnownTargetPosition);
+            var targetPos = _target.Position;
+            var currentPos = transform.position;
+            var toTarget = targetPos - currentPos;
 
-            if (Vector3.Distance(transform.position, _lastKnownTargetPosition) > 0.1f)
+            var distanceThisFrame = speed * Time.deltaTime;
+            var sqrDistanceThisFrame = distanceThisFrame * distanceThisFrame;
+
+            if (toTarget.sqrMagnitude <= sqrDistanceThisFrame)
+            {
+                HitTarget();
                 return;
+            }
 
-            _target.TakeDamage(damage);
-            Destroy(gameObject);
+            var direction = toTarget.normalized;
+            transform.position = currentPos + direction * distanceThisFrame;
         }
 
-        private void MoveTowards(Vector3 targetPosition)
+        public void Init(IDamageable target, int damage, float overrideSpeed, float overrideLifetime)
         {
-            var direction = (targetPosition - transform.position).normalized;
-            if (direction.sqrMagnitude <= 0f)
-                return;
+            _target = target;
+            _damage = Mathf.Max(0, damage);
 
-            transform.position += direction * (speed * Time.deltaTime);
+            if (overrideSpeed > 0f)
+                speed = overrideSpeed;
+
+            if (overrideLifetime > 0f)
+                maxLifetime = overrideLifetime;
+
+            _initialized = true;
+        }
+
+        private void HitTarget()
+        {
+            if (_target is { IsAlive: true } && _damage > 0)
+                _target.TakeDamage(_damage);
+
+            Destroy(gameObject);
         }
     }
 }

@@ -6,84 +6,76 @@ using UnityEngine;
 
 namespace Waves
 {
+    [DisallowMultipleComponent]
     public class WaveSpawner : MonoBehaviour
     {
         [SerializeField] private PathController pathController;
         [SerializeField] private Transform enemiesRoot;
-        [SerializeField] private float spawnInterval = 0.5f;
+
+        [Min(0f)] [SerializeField] private float spawnInterval = 0.5f;
 
         public bool IsSpawning { get; private set; }
 
         public void StartWave(WaveDefinition waveDefinition)
         {
-            if (IsSpawning)
-                return;
-
             if (waveDefinition == null)
                 return;
 
-            if (pathController == null)
+            if (!gameObject.activeInHierarchy)
                 return;
 
-            StartCoroutine(SpawnWave(waveDefinition));
+            StopAllCoroutines();
+            StartCoroutine(SpawnWaveRoutine(waveDefinition));
         }
 
-        private IEnumerator SpawnWave(WaveDefinition waveDefinition)
+        private IEnumerator SpawnWaveRoutine(WaveDefinition waveDefinition)
         {
             IsSpawning = true;
 
-            var waypoints = pathController.Waypoints;
+            var waypoints = pathController != null ? pathController.Waypoints : null;
             if (waypoints == null || waypoints.Length == 0)
             {
                 IsSpawning = false;
                 yield break;
             }
 
-            var enemies = waveDefinition.Enemies;
-            if (enemies == null || enemies.Length == 0)
+            foreach (var spawn in waveDefinition.Enemies)
             {
-                IsSpawning = false;
-                yield break;
-            }
-
-            var startPoint = waypoints[0].position;
-            var secondPoint = waypoints.Length > 1 ? waypoints[1].position : startPoint;
-            var backDir = (startPoint - secondPoint).normalized;
-
-            var spawnIndex = 0;
-
-            foreach (var spawnInfo in enemies)
-            {
-                var config = spawnInfo.EnemyConfig;
-                var count = spawnInfo.Count;
-
-                if (config == null || config.Prefab == null || count <= 0)
+                if (spawn == null)
                     continue;
 
-                for (var j = 0; j < count; j++)
+                var config = spawn.EnemyConfig;
+                var count = spawn.Count;
+
+                if (config == null || config.Prefab == null)
+                    continue;
+
+                if (count <= 0)
+                    continue;
+
+                for (var i = 0; i < count; i++)
                 {
-                    var spawnPosition = startPoint + backDir * (spawnIndex * 0.5f);
-                    spawnIndex++;
+                    var startPosition = waypoints[0].position;
+                    var parent = enemiesRoot ? enemiesRoot : transform;
 
-                    var instance = enemiesRoot != null
-                        ? Instantiate(config.Prefab, spawnPosition, Quaternion.identity, enemiesRoot)
-                        : Instantiate(config.Prefab, spawnPosition, Quaternion.identity);
-
-                    var follower = instance.GetComponent<EnemyPathFollower>();
-                    if (follower != null)
-                        follower.Init(pathController);
+                    var instance = Instantiate(config.Prefab, startPosition, Quaternion.identity, parent);
 
                     var enemy = instance.GetComponent<Enemy>();
                     if (enemy != null)
-                    {
                         enemy.Init(config);
 
-                        var gameManager = GameManager.Instance;
-                        if (gameManager != null)
-                            gameManager.RegisterEnemySpawn();
-                    }
+                    var follower = instance.GetComponent<EnemyPathFollower>();
+                    if (follower != null && pathController != null)
+                        follower.Init(pathController);
 
-                    yield return new WaitForSeconds(spawnInterval);
+                    var gameManager = GameManager.Instance;
+                    if (gameManager != null)
+                        gameManager.RegisterEnemySpawn();
+
+                    if (spawnInterval > 0f)
+                        yield return new WaitForSeconds(spawnInterval);
+                    else
+                        yield return null;
                 }
             }
 

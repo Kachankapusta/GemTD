@@ -3,14 +3,22 @@ using UnityEngine;
 
 namespace Towers
 {
+    [DisallowMultipleComponent]
+    [SelectionBase]
     public class Tower : MonoBehaviour
     {
         [SerializeField] private TowerConfig config;
-        [SerializeField] private float cellSize = 1.5f;
+
+        [Min(0f)] [SerializeField] private float cellSize = 1.5f;
+
         [SerializeField] private TowerProjectile projectilePrefab;
         [SerializeField] private Transform firePoint;
-        [SerializeField] private float projectileSpeed = 10f;
-        [SerializeField] private float projectileMaxLifetime = 5f;
+
+        [Min(0f)] [SerializeField] private float projectileSpeed = 10f;
+
+        [Min(0f)] [SerializeField] private float projectileMaxLifetime = 5f;
+
+        [SerializeField] private LayerMask targetLayerMask = ~0;
 
         private float _cooldown;
 
@@ -36,27 +44,31 @@ namespace Towers
             }
 
             var target = FindTarget();
-            if (target == null || !target.IsAlive)
+            if (target is not { IsAlive: true })
                 return;
 
             FireAt(target);
-            _cooldown = config.FireInterval;
+
+            if (config.FireInterval > 0f)
+                _cooldown = config.FireInterval;
         }
 
         private void FireAt(IDamageable target)
         {
-            if (target == null || !target.IsAlive)
+            if (target is not { IsAlive: true })
                 return;
 
             if (projectilePrefab == null)
             {
-                target.TakeDamage(config.Damage);
+                if (Damage > 0)
+                    target.TakeDamage(Damage);
+
                 return;
             }
 
             var spawnPosition = firePoint != null ? firePoint.position : transform.position;
             var instance = Instantiate(projectilePrefab, spawnPosition, Quaternion.identity);
-            instance.Init(target, config.Damage, projectileSpeed, projectileMaxLifetime);
+            instance.Init(target, Damage, projectileSpeed, projectileMaxLifetime);
         }
 
         private IDamageable FindTarget()
@@ -64,18 +76,22 @@ namespace Towers
             if (config == null)
                 return null;
 
-            var hits = Physics.OverlapSphere(transform.position, WorldRange);
+            var radius = WorldRange;
+            if (radius <= 0f)
+                return null;
+
+            var hits = Physics.OverlapSphere(transform.position, radius, targetLayerMask);
             IDamageable best = null;
             var bestDistance = float.MaxValue;
 
-            foreach (var t in hits)
+            foreach (var с in hits)
             {
-                var damageable = t.GetComponentInParent<IDamageable>();
-                if (damageable == null || !damageable.IsAlive)
+                var damageable = с.GetComponentInParent<IDamageable>();
+                if (damageable is not { IsAlive: true })
                     continue;
 
                 var distance = (damageable.Position - transform.position).sqrMagnitude;
-                if (!(distance < bestDistance))
+                if (distance >= bestDistance)
                     continue;
 
                 bestDistance = distance;

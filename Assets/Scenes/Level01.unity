@@ -398,6 +398,7 @@ MonoBehaviour:
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -639,6 +640,7 @@ MonoBehaviour:
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -845,6 +847,7 @@ MonoBehaviour:
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -981,6 +984,7 @@ MonoBehaviour:
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -1382,6 +1386,7 @@ MonoBehaviour:
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -1656,14 +1661,14 @@ Light:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 410087039}
   m_Enabled: 1
-  serializedVersion: 11
+  serializedVersion: 12
   m_Type: 1
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Intensity: 2
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
-  m_CookieSize: 10
+  m_CookieSize2D: {x: 10, y: 10}
   m_Shadows:
     m_Type: 2
     m_Resolution: -1
@@ -1911,6 +1916,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!33 &533180431
 MeshFilter:
@@ -2047,6 +2053,7 @@ MonoBehaviour:
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -2624,6 +2631,7 @@ MonoBehaviour:
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -3107,6 +3115,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -3423,6 +3432,7 @@ MonoBehaviour:
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -3786,6 +3796,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -3922,6 +3933,7 @@ MonoBehaviour:
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -4239,6 +4251,7 @@ MonoBehaviour:
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -4995,6 +5008,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -5928,6 +5942,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -6247,6 +6262,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!33 &2029603761
 MeshFilter:
@@ -6375,6 +6391,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!33 &2036606495
 MeshFilter:
@@ -6678,76 +6695,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d644f8ebbd3784d42a9ab13197c5e1c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
-  <Gold>k__BackingField: 0
-  <Lumber>k__BackingField: 5
-  <Lives>k__BackingField: 50
-  <Wave>k__BackingField: 0
-  <State>k__BackingField: 0
+  resources:
+    gold: 0
+    lumber: 5
+    lives: 50
+  lottery:
+    qualityLevels:
+    - playerLevel: 1
+      chipped: 100
+      flawed: 0
+      normal: 0
+      flawless: 0
+      perfect: 0
+  playerLevel: 1
+  lumberRewardPerWave: 5
   waveSpawner: {fileID: 814578885}
   levelWavesConfig: {fileID: 11400000, guid: c270581a4e413f0408eed0c248287b02, type: 2}
-  lumberRewardPerWave: 5
-  playerLevel: 1
-  towerQualityLevels:
-  - playerLevel: 1
-    chipped: 100
-    flawed: 0
-    normal: 0
-    flawless: 0
-    perfect: 0
-  - playerLevel: 2
-    chipped: 80
-    flawed: 20
-    normal: 0
-    flawless: 0
-    perfect: 0
-  - playerLevel: 3
-    chipped: 60
-    flawed: 35
-    normal: 5
-    flawless: 0
-    perfect: 0
-  - playerLevel: 4
-    chipped: 40
-    flawed: 45
-    normal: 15
-    flawless: 0
-    perfect: 0
-  - playerLevel: 5
-    chipped: 30
-    flawed: 50
-    normal: 20
-    flawless: 0
-    perfect: 0
-  - playerLevel: 6
-    chipped: 30
-    flawed: 40
-    normal: 25
-    flawless: 5
-    perfect: 0
-  - playerLevel: 7
-    chipped: 25
-    flawed: 35
-    normal: 35
-    flawless: 5
-    perfect: 0
-  - playerLevel: 8
-    chipped: 15
-    flawed: 35
-    normal: 35
-    flawless: 15
-    perfect: 0
-  - playerLevel: 9
-    chipped: 5
-    flawed: 20
-    normal: 40
-    flawless: 25
-    perfect: 10
-  - playerLevel: 10
-    chipped: 0
-    flawed: 5
-    normal: 40
-    flawless: 35
-    perfect: 20
 --- !u!1001 &2114663562
 PrefabInstance:
   m_ObjectHideFlags: 0

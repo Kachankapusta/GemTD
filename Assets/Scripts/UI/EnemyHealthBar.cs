@@ -4,11 +4,27 @@ using UnityEngine.UI;
 
 namespace UI
 {
+    [DisallowMultipleComponent]
+    [RequireComponent(typeof(Canvas))]
     public class EnemyHealthBar : MonoBehaviour
     {
         [SerializeField] private Enemy enemy;
         [SerializeField] private Slider healthSlider;
         [SerializeField] private Camera targetCamera;
+
+        private void LateUpdate()
+        {
+            if (targetCamera == null)
+                return;
+
+            var camTransform = targetCamera.transform;
+            var direction = camTransform.position - transform.position;
+
+            if (direction.sqrMagnitude <= 0.0001f)
+                return;
+
+            transform.rotation = Quaternion.LookRotation(direction, Vector3.up);
+        }
 
         private void OnEnable()
         {
@@ -30,21 +46,6 @@ namespace UI
             if (enemy != null)
                 enemy.HealthChanged -= OnHealthChanged;
         }
-
-        private void LateUpdate()
-        {
-            if (targetCamera == null)
-                return;
-
-            var camTransform = targetCamera.transform;
-            var direction = camTransform.position - transform.position;
-
-            if (direction.sqrMagnitude <= 0.0001f)
-                return;
-
-            transform.rotation = Quaternion.LookRotation(direction, Vector3.up);
-        }
-
 
         private void OnHealthChanged(float normalizedValue)
         {

@@ -2,6 +2,8 @@
 
 namespace Towers
 {
+    [DisallowMultipleComponent]
+    [RequireComponent(typeof(Renderer))]
     public class TowerRangeIndicator : MonoBehaviour
     {
         [SerializeField] private Transform visual;

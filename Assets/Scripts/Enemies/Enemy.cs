@@ -6,32 +6,48 @@ using UnityEngine.AI;
 
 namespace Enemies
 {
+    [DisallowMultipleComponent]
+    [RequireComponent(typeof(NavMeshAgent))]
     public class Enemy : MonoBehaviour, IDamageable
     {
         [SerializeField] private EnemyConfig config;
         [SerializeField] private NavMeshAgent agent;
 
         private int _currentHealth;
-
         public EnemyConfig Config => config;
 
         public float HealthPercent => config != null && config.MaxHealth > 0
             ? (float)_currentHealth / config.MaxHealth
             : 0f;
 
-        public bool IsAlive => _currentHealth > 0;
-
-        public Vector3 Position => transform.position;
-
-        public event Action<float> HealthChanged;
-
         private void Awake()
         {
             if (agent == null)
                 agent = GetComponent<NavMeshAgent>();
 
-            ApplyConfig();
+            if (config != null)
+                ApplyConfig();
         }
+
+        public bool IsAlive => _currentHealth > 0;
+        public Vector3 Position => transform.position;
+
+        public void TakeDamage(int amount)
+        {
+            if (amount <= 0 || !IsAlive)
+                return;
+
+            _currentHealth -= amount;
+            if (_currentHealth < 0)
+                _currentHealth = 0;
+
+            RaiseHealthChanged();
+
+            if (_currentHealth <= 0)
+                Die(true);
+        }
+
+        public event Action<float> HealthChanged;
 
         public void Init(EnemyConfig enemyConfig)
         {
@@ -39,23 +55,9 @@ namespace Enemies
             ApplyConfig();
         }
 
-        public void TakeDamage(int amount)
+        public void OnReachedEnd()
         {
-            if (amount <= 0)
-                return;
-
-            if (!IsAlive)
-                return;
-
-            _currentHealth -= amount;
-
-            if (_currentHealth < 0)
-                _currentHealth = 0;
-
-            RaiseHealthChanged();
-
-            if (_currentHealth <= 0)
-                Die();
+            Die(false);
         }
 
         private void ApplyConfig()
@@ -73,19 +75,18 @@ namespace Enemies
 
         private void RaiseHealthChanged()
         {
-            var percent = HealthPercent;
-            HealthChanged?.Invoke(percent);
+            HealthChanged?.Invoke(HealthPercent);
         }
 
-        private void Die()
+        private void Die(bool giveReward)
         {
-            var gameManager = GameManager.Instance;
-            if (gameManager != null)
+            var gm = GameManager.Instance;
+            if (gm != null)
             {
-                if (config != null)
-                    gameManager.AddGold(config.Bounty);
+                if (giveReward && config != null)
+                    gm.Resources.AddGold(config.Bounty);
 
-                gameManager.NotifyEnemyRemoved();
+                gm.NotifyEnemyRemoved();
             }
 
             Destroy(gameObject);

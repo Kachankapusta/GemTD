@@ -2,19 +2,20 @@ using UnityEngine;
 
 namespace Level
 {
+    [DisallowMultipleComponent]
     public class GridHelper : MonoBehaviour
     {
         [SerializeField] private Transform gameBoard;
-        [SerializeField] private int columns = 37;
-        [SerializeField] private int rows = 37;
+
+        [Min(1)] [SerializeField] private int columns = 37;
+
+        [Min(1)] [SerializeField] private int rows = 37;
 
         private Vector3 _boardCenter;
         private float _cellSizeX;
         private float _cellSizeZ;
         private float _halfHeight;
         private float _halfWidth;
-        public int Columns => columns;
-        public int Rows => rows;
 
         private void Awake()
         {
@@ -26,17 +27,15 @@ namespace Level
             if (gameBoard == null)
                 return;
 
-            if (columns <= 0 || rows <= 0)
-                return;
-
-            Recalculate();
-
-            Gizmos.color = Color.gray;
+            if (_cellSizeX <= 0f || _cellSizeZ <= 0f)
+                Recalculate();
 
             var minX = _boardCenter.x - _halfWidth;
             var maxX = _boardCenter.x + _halfWidth;
             var minZ = _boardCenter.z - _halfHeight;
             var maxZ = _boardCenter.z + _halfHeight;
+
+            Gizmos.color = Color.gray;
 
             for (var i = 0; i <= columns; i++)
             {
@@ -61,12 +60,9 @@ namespace Level
             if (gameBoard == null)
                 return;
 
-            if (columns <= 0 || rows <= 0)
-                return;
-
-            var localScale = gameBoard.localScale;
-            var sizeX = localScale.x;
-            var sizeZ = localScale.z;
+            var scale = gameBoard.localScale;
+            var sizeX = scale.x;
+            var sizeZ = scale.z;
 
             _halfWidth = sizeX * 0.5f;
             _halfHeight = sizeZ * 0.5f;
@@ -92,9 +88,6 @@ namespace Level
         {
             column = 0;
             row = 0;
-
-            if (gameBoard == null)
-                return false;
 
             var minX = _boardCenter.x - _halfWidth;
             var maxX = _boardCenter.x + _halfWidth;

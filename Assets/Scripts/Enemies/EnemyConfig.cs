@@ -13,8 +13,8 @@ namespace Enemies
 
         public string Id => id;
         public GameObject Prefab => prefab;
-        public int MaxHealth => maxHealth;
-        public int Bounty => bounty;
-        public float MoveSpeed => moveSpeed;
+        [Min(1)] public int MaxHealth => maxHealth;
+        [Min(0)] public int Bounty => bounty;
+        [Min(0f)] public float MoveSpeed => moveSpeed;
     }
 }

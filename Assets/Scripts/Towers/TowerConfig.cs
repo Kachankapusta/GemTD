@@ -17,11 +17,11 @@ namespace Towers
         public string Id => id;
         public GemType Type => type;
         public GemQuality Quality => quality;
-        public float Range => range;
-        public float FireInterval => fireInterval;
-        public int Damage => damage;
+        [Min(0f)] public float Range => range;
+        [Min(0f)] public float FireInterval => fireInterval;
+        [Min(0)] public int Damage => damage;
         public int GoldCost => goldCost < 0 ? 0 : goldCost;
-        public string AbilityDescription => abilityDescription;
+        [TextArea] public string AbilityDescription => abilityDescription;
 
         public string DisplayName
         {

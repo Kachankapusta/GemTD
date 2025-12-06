@@ -4,14 +4,15 @@ using UnityEngine.AI;
 
 namespace Level
 {
+    [DisallowMultipleComponent]
     public class PathBlocker : MonoBehaviour
     {
         [SerializeField] private PathController pathController;
         [SerializeField] private GridHelper grid;
 
         private readonly HashSet<Vector2Int> _pathCells = new();
-        private NavMeshPath _navMeshPath;
         private bool _initialized;
+        private NavMeshPath _navMeshPath;
 
         private void Awake()
         {
@@ -61,9 +62,9 @@ namespace Level
             }
 
             var waypoints = pathController.Waypoints;
-            if (waypoints == null || waypoints.Length < 2)
+            if (waypoints == null || waypoints.Length == 0)
             {
-                Debug.LogError("PathBlocker: PathController must have at least start and end");
+                Debug.LogError("PathBlocker: no waypoints configured");
                 return;
             }
 

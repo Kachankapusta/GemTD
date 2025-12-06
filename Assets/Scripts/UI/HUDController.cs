@@ -6,6 +6,7 @@ using UnityEngine.UI;
 
 namespace UI
 {
+    [DisallowMultipleComponent]
     public class HUDController : MonoBehaviour
     {
         [SerializeField] private TextMeshProUGUI goldText;
@@ -21,20 +22,33 @@ namespace UI
 
         private float _buildErrorTimer;
 
+        private void Update()
+        {
+            if (buildErrorText == null)
+                return;
+
+            if (_buildErrorTimer <= 0f)
+                return;
+
+            _buildErrorTimer -= Time.deltaTime;
+            if (_buildErrorTimer <= 0f)
+                buildErrorText.text = string.Empty;
+        }
+
         private void OnEnable()
         {
+            if (gameManager == null)
+                gameManager = GameManager.Instance;
+
             if (startWaveButton != null)
                 startWaveButton.onClick.AddListener(OnStartWaveClicked);
-
-            if (buildErrorText != null)
-                buildErrorText.text = string.Empty;
 
             if (gameManager == null)
                 return;
 
-            gameManager.GoldChanged += OnGoldChanged;
-            gameManager.LumberChanged += OnLumberChanged;
-            gameManager.LivesChanged += OnLivesChanged;
+            gameManager.Resources.GoldChanged += OnGoldChanged;
+            gameManager.Resources.LumberChanged += OnLumberChanged;
+            gameManager.Resources.LivesChanged += OnLivesChanged;
             gameManager.WaveChanged += OnWaveChanged;
             gameManager.GameStateChanged += OnGameStateChanged;
 
@@ -50,24 +64,11 @@ namespace UI
             if (gameManager == null)
                 return;
 
-            gameManager.GoldChanged -= OnGoldChanged;
-            gameManager.LumberChanged -= OnLumberChanged;
-            gameManager.LivesChanged -= OnLivesChanged;
+            gameManager.Resources.GoldChanged -= OnGoldChanged;
+            gameManager.Resources.LumberChanged -= OnLumberChanged;
+            gameManager.Resources.LivesChanged -= OnLivesChanged;
             gameManager.WaveChanged -= OnWaveChanged;
             gameManager.GameStateChanged -= OnGameStateChanged;
-        }
-
-        private void Update()
-        {
-            if (buildErrorText == null)
-                return;
-
-            if (_buildErrorTimer <= 0f)
-                return;
-
-            _buildErrorTimer -= Time.deltaTime;
-            if (_buildErrorTimer <= 0f)
-                buildErrorText.text = string.Empty;
         }
 
         private void OnStartWaveClicked()
@@ -77,9 +78,7 @@ namespace UI
 
             if (gameManager.State != GameState.BuildPhase)
             {
-                if (gameManager.State == GameState.GameOver)
-                    ShowBuildError("Game over.", 2f);
-
+                ShowBuildError("You can start a wave only in build phase.", 2f);
                 return;
             }
 
@@ -89,13 +88,13 @@ namespace UI
                 return;
             }
 
-            if (gameManager.Lumber > 0)
+            if (gameManager.Resources.Lumber > 0)
             {
                 ShowBuildError("Spend all lumber before starting the next wave.", 2f);
                 return;
             }
 
-            if (gameManager.HasActiveEnemies)
+            if (gameManager.HasActiveEnemies())
             {
                 ShowBuildError("You must finish the current wave first.", 2f);
                 return;
@@ -126,9 +125,9 @@ namespace UI
             if (gameManager == null)
                 return;
 
-            OnGoldChanged(gameManager.Gold);
-            OnLumberChanged(gameManager.Lumber);
-            OnLivesChanged(gameManager.Lives);
+            OnGoldChanged(gameManager.Resources.Gold);
+            OnLumberChanged(gameManager.Resources.Lumber);
+            OnLivesChanged(gameManager.Resources.Lives);
             OnWaveChanged(gameManager.Wave);
         }
 

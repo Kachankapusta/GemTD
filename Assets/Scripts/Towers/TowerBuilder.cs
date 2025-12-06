@@ -9,8 +9,11 @@ using UnityEngine.InputSystem;
 
 namespace Towers
 {
+    [DisallowMultipleComponent]
     public class TowerBuilder : MonoBehaviour
     {
+        private const int LumberCostPerTower = 1;
+
         [SerializeField] private Camera mainCamera;
         [SerializeField] private GridHelper grid;
         [SerializeField] private Transform gameBoard;
@@ -21,46 +24,87 @@ namespace Towers
         [SerializeField] private HUDController hudController;
         [SerializeField] private float towerY = 0.8f;
 
-        private const int LumberCostPerTower = 1;
-        private readonly HashSet<Vector2Int> _occupiedCells = new();
         private readonly List<Tower> _draftTowers = new();
+        private readonly HashSet<Vector2Int> _occupiedCells = new();
 
         private bool _isPlacing;
 
         public bool IsSelectionMode { get; private set; }
+
+        private void Update()
+        {
+            if (Mouse.current == null)
+                return;
+
+            if (!Mouse.current.leftButton.wasPressedThisFrame)
+                return;
+
+            if (!GetRaycastHit(out var hit))
+                return;
+
+            if (TrySelectTower(hit))
+                return;
+
+            var gm = GameManager.Instance;
+            if (gm == null) return;
+
+            if (gm.State != GameState.BuildPhase)
+                return;
+
+            TryBuildTower(hit, gm);
+        }
 
         public bool IsDraftTower(Tower tower)
         {
             return tower != null && _draftTowers.Contains(tower);
         }
 
-        private void Update()
+        public void SelectDraftTower(Tower selectedTower)
         {
-            if (!IsBuildInputTriggered())
+            if (selectedTower == null)
                 return;
 
-            if (!TryGetMouseHit(out var hit))
+            if (!_draftTowers.Contains(selectedTower))
                 return;
 
-            if (TryHandleTowerSelection(hit))
+            if (!IsSelectionMode)
                 return;
 
-            var gameManager = GameManager.Instance;
-            if (gameManager == null)
+            var gm = GameManager.Instance;
+            if (gm == null)
                 return;
 
-            if (gameManager.State != GameState.BuildPhase)
-                return;
+            foreach (var tower in _draftTowers)
+            {
+                if (tower == null)
+                    continue;
 
-            HandleBuildClick(hit);
+                if (tower == selectedTower)
+                    continue;
+
+                var position = tower.transform.position;
+
+                if (rockPrefab != null)
+                {
+                    var rock = Instantiate(
+                        rockPrefab,
+                        position,
+                        Quaternion.identity,
+                        towersRoot ? towersRoot : transform
+                    );
+                    rock.name = "Rock";
+                }
+
+                Destroy(tower.gameObject);
+            }
+
+            _draftTowers.Clear();
+            _draftTowers.Add(selectedTower);
+
+            IsSelectionMode = false;
         }
 
-        private static bool IsBuildInputTriggered()
-        {
-            return Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame;
-        }
-
-        private bool TryGetMouseHit(out RaycastHit hit)
+        private bool GetRaycastHit(out RaycastHit hit)
         {
             hit = default;
 
@@ -73,7 +117,7 @@ namespace Towers
             return Physics.Raycast(ray, out hit, 1000f);
         }
 
-        private bool TryHandleTowerSelection(RaycastHit hit)
+        private bool TrySelectTower(RaycastHit hit)
         {
             var tower = hit.collider.GetComponentInParent<Tower>();
             if (tower == null)
@@ -85,12 +129,12 @@ namespace Towers
             return true;
         }
 
-        private void HandleBuildClick(RaycastHit hit)
+        private void TryBuildTower(RaycastHit hit, GameManager gm)
         {
-            if (grid == null || gameBoard == null || pathBlocker == null)
+            if (_isPlacing)
                 return;
 
-            if (_isPlacing)
+            if (grid == null || pathBlocker == null)
                 return;
 
             if (hit.collider.transform != gameBoard)
@@ -100,106 +144,101 @@ namespace Towers
                 return;
 
             var cell = new Vector2Int(column, row);
-            if (_occupiedCells.Contains(cell))
+
+            if (!ValidateBuildConditions(cell, gm))
                 return;
 
-            if (pathBlocker.IsPathCell(cell))
+            var prefab = ChooseRandomTowerPrefab(gm);
+            if (prefab == null)
             {
-                if (hudController != null)
-                    hudController.ShowBuildError("You cannot build on the path.", 2f);
-
-                return;
-            }
-
-            var gameManager = GameManager.Instance;
-            if (gameManager != null && LumberCostPerTower > 0 && gameManager.Lumber < LumberCostPerTower)
-            {
-                if (hudController != null)
-                    hudController.ShowBuildError("Not enough lumber.", 2f);
-
-                return;
-            }
-
-            var selectedPrefab = GetRandomTowerPrefab();
-            if (selectedPrefab == null)
-            {
-                if (hudController != null)
-                    hudController.ShowBuildError("No towers configured.", 2f);
-
+                ShowError("No towers configured.");
                 return;
             }
 
             var center = grid.GetCellCenter(column, row);
             var position = new Vector3(center.x, towerY, center.z);
 
-            StartCoroutine(PlaceTower(cell, position, selectedPrefab));
+            StartCoroutine(PlaceTowerRoutine(cell, position, prefab));
         }
 
-        private IEnumerator PlaceTower(Vector2Int cell, Vector3 position, GameObject prefab)
+        private bool ValidateBuildConditions(Vector2Int cell, GameManager gm)
+        {
+            if (_occupiedCells.Contains(cell))
+                return false;
+
+            if (pathBlocker.IsPathCell(cell))
+            {
+                ShowError("Cannot build on the path.");
+                return false;
+            }
+
+            if (gm.Resources.CanAfford(0, LumberCostPerTower)) return true;
+            ShowError("Not enough lumber.");
+            return false;
+        }
+
+        private IEnumerator PlaceTowerRoutine(Vector2Int cell, Vector3 position, GameObject prefab)
         {
             _isPlacing = true;
 
-            var instance = towersRoot != null
-                ? Instantiate(prefab, position, Quaternion.identity, towersRoot)
-                : Instantiate(prefab, position, Quaternion.identity);
+            var parent = towersRoot ? towersRoot : transform;
+            var instance = Instantiate(prefab, position, Quaternion.identity, parent);
 
             _occupiedCells.Add(cell);
 
             yield return null;
 
-            var gameManager = GameManager.Instance;
-            if (gameManager != null && LumberCostPerTower > 0)
-            {
-                var lumberBefore = gameManager.Lumber;
-
-                gameManager.SpendResources(0, LumberCostPerTower);
-
-                var tower = instance.GetComponent<Tower>();
-                if (tower != null)
-                    _draftTowers.Add(tower);
-
-                if (!IsSelectionMode && lumberBefore > 0 && gameManager.Lumber == 0 && _draftTowers.Count > 0)
-                {
-                    IsSelectionMode = true;
-
-                    if (hudController != null)
-                        hudController.ShowBuildError("Choose one tower in its menu. Others will turn into rocks.", 3f);
-                }
-            }
-
-            if (pathBlocker != null && !pathBlocker.IsPathValid())
+            if (!pathBlocker.IsPathValid())
             {
                 _occupiedCells.Remove(cell);
                 Destroy(instance);
-
-                if (hudController != null)
-                    hudController.ShowBuildError("Placing this tower would block the path.", 2f);
+                ShowError("Placing this tower would block the path.");
+            }
+            else
+            {
+                OnTowerPlacedSuccessfully(instance);
             }
 
             _isPlacing = false;
         }
 
-        private GameObject GetRandomTowerPrefab()
+        private void OnTowerPlacedSuccessfully(GameObject instance)
+        {
+            var gm = GameManager.Instance;
+            if (gm == null)
+                return;
+
+            var currentLumber = gm.Resources.Lumber;
+
+            gm.Resources.TrySpend(0, LumberCostPerTower);
+
+            var tower = instance.GetComponent<Tower>();
+            if (tower != null)
+                _draftTowers.Add(tower);
+
+            if (IsSelectionMode ||
+                currentLumber <= 0 ||
+                gm.Resources.Lumber != 0 ||
+                _draftTowers.Count <= 0) return;
+            IsSelectionMode = true;
+            ShowError("Choose one tower. Others will become rocks.", 3f);
+        }
+
+        private GameObject ChooseRandomTowerPrefab(GameManager gm)
         {
             if (towerPrefabs == null || towerPrefabs.Length == 0)
                 return null;
 
-            var gameManager = GameManager.Instance;
+            var quality = gm != null
+                ? gm.Lottery.RollQuality(gm.PlayerLevel)
+                : GemQuality.Chipped;
 
-            var useQualityFilter = gameManager != null;
-            var targetQuality = GemQuality.Chipped;
-
-            if (gameManager != null)
-                targetQuality = gameManager.GetRandomQualityForCurrentLevel();
-
-            var candidates = (from prefab in towerPrefabs
-                where prefab != null
-                let tower = prefab.GetComponent<Tower>()
-                where tower != null
-                let config = tower.Config
-                where config != null
-                where !useQualityFilter || config.Quality == targetQuality
-                select prefab).ToList();
+            var candidates = towerPrefabs
+                .Where(p => p != null)
+                .Select(p => p.GetComponent<Tower>())
+                .Where(t => t != null && t.Config != null && t.Config.Quality == quality)
+                .Select(t => t.gameObject)
+                .ToList();
 
             if (candidates.Count == 0)
                 return null;
@@ -208,37 +247,12 @@ namespace Towers
             return candidates[index];
         }
 
-        public void SelectDraftTower(Tower selectedTower)
+        private void ShowError(string message, float duration = 2f)
         {
-            if (!IsSelectionMode)
+            if (hudController == null)
                 return;
 
-            if (selectedTower == null)
-                return;
-
-            if (!_draftTowers.Contains(selectedTower))
-                return;
-
-            FinalizeDraft(selectedTower);
-        }
-
-        private void FinalizeDraft(Tower selectedTower)
-        {
-            foreach (var tower in from tower in _draftTowers
-                     where tower != null
-                     where tower != selectedTower
-                     where rockPrefab != null
-                     let tr = tower.transform
-                     let position = tr.position
-                     let rotation = tr.rotation
-                     let rockInstance = towersRoot != null
-                         ? Instantiate(rockPrefab, position, rotation, towersRoot)
-                         : Instantiate(rockPrefab, position, rotation)
-                     select tower)
-                Destroy(tower.gameObject);
-
-            _draftTowers.Clear();
-            IsSelectionMode = false;
+            hudController.ShowBuildError(message, duration);
         }
     }
 }

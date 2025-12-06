@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace Level
 {
+    [DisallowMultipleComponent]
     public class PathController : MonoBehaviour
     {
         [SerializeField] private Transform[] waypoints;
